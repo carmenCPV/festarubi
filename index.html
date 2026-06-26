@@ -3194,11 +3194,9 @@ function adminGoTab(tabName) {
 async function renderAdminDashboard() {
   const ls = JSON.parse(localStorage.getItem('_fmStats') || '{}');
 
-  // --- Stats cards locals ---
-  document.getElementById('stat-sessions').textContent = (ls.sessions || 0).toLocaleString('ca-ES');
+  // --- Stats cards (des del servidor, no localStorage) ---
   const lastVisit = ls.lastVisit ? new Date(ls.lastVisit).toLocaleString('ca-ES', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
   document.getElementById('stat-sessions-date').textContent = 'Última: ' + lastVisit;
-  document.getElementById('stat-events-viewed').textContent = (ls.totalEventViews || 0).toLocaleString('ca-ES');
 
   const sv = ls.sectionVisits || {};
   const sNames = {home:'Inici',programa:'Programa',mapa:'Mapa',chat:'Chatbot'};
