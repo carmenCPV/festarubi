@@ -1,0 +1,3481 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#C8102E">
+<title>FestaRubí · La teva guia de la Festa Major</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,800;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root {
+  --rubi-red: #C8102E;
+  --rubi-red-dark: #9A0C24;
+  --rubi-cream: #FAF5EC;
+  --rubi-yellow: #F4C430;
+  --rubi-ink: #1A1A1A;
+  --rubi-ink-soft: #4A4A4A;
+  --rubi-line: #E8DFCD;
+  --rubi-white: #FFFFFF;
+
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--rubi-cream);
+  color: var(--rubi-ink);
+  overflow: hidden;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea { font-family: inherit; }
+
+#app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  background: var(--rubi-cream);
+  box-shadow: 0 0 60px rgba(0,0,0,0.08);
+}
+
+/* ============ SPLASH / WELCOME ============ */
+.splash {
+  position: absolute;
+  inset: 0;
+  background: var(--rubi-red);
+  color: var(--rubi-cream);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  z-index: 100;
+  text-align: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.splash.hidden { opacity: 0; transform: translateY(-100%); pointer-events: none; }
+
+.splash-logo {
+  width: 88px; height: 88px;
+  background: var(--rubi-cream);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+  animation: pulseRing 2.2s ease-in-out infinite;
+}
+@keyframes pulseRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(250, 245, 236, 0.4); }
+  50% { box-shadow: 0 0 0 18px rgba(250, 245, 236, 0); }
+}
+.splash-logo svg { width: 54px; height: 54px; }
+
+.splash h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.splash h1 em { font-style: italic; font-weight: 400; color: var(--rubi-yellow); }
+.splash-subtitle {
+  font-size: 15px;
+  opacity: 0.85;
+  margin-bottom: 40px;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.splash-btn {
+  background: var(--rubi-cream);
+  color: var(--rubi-red);
+  padding: 14px 36px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+.splash-btn:active { transform: scale(0.97); }
+
+.splash-lang {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.15);
+  padding: 4px;
+  border-radius: 999px;
+}
+.splash-lang button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rubi-cream);
+  opacity: 0.6;
+}
+.splash-lang button.active { background: var(--rubi-cream); color: var(--rubi-red); opacity: 1; }
+
+.splash-decor {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.08;
+}
+.splash-decor.top { top: -40px; right: -40px; font-size: 220px; }
+.splash-decor.bottom { bottom: -60px; left: -40px; font-size: 220px; }
+
+/* ============ HEADER ============ */
+.header {
+  background: var(--rubi-red);
+  color: var(--rubi-cream);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-logo {
+  width: 36px; height: 36px;
+  background: var(--rubi-cream);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.header-logo svg { width: 22px; height: 22px; }
+.header-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.header-title em { font-style: italic; color: var(--rubi-yellow); font-weight: 400; }
+.header-actions { display: flex; gap: 8px; }
+.header-icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.header-icon-btn:active { background: rgba(255,255,255,0.25); }
+.header-icon-btn svg { width: 18px; height: 18px; stroke: var(--rubi-cream); }
+
+/* ============ MAIN CONTENT AREA ============ */
+.main {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.view.active { display: flex; }
+
+/* ============ HOME VIEW ============ */
+.home-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 20px;
+}
+
+.hero {
+  background: linear-gradient(160deg, var(--rubi-red) 0%, var(--rubi-red-dark) 100%);
+  color: var(--rubi-cream);
+  padding: 28px 20px 32px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 24px;
+  background: var(--rubi-cream);
+  clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 70%);
+}
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.hero h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+.hero h2 em { font-style: italic; color: var(--rubi-yellow); font-weight: 400; }
+
+.hero-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+.hero-stat {
+  background: rgba(255,255,255,0.12);
+  padding: 8px 12px;
+  border-radius: 10px;
+  flex: 1;
+}
+.hero-stat-num {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 10px;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.section { padding: 24px 20px 8px; }
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title em { font-style: italic; font-weight: 400; color: var(--rubi-red); }
+.section-title a {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--rubi-red);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Rita card (chat highlight) */
+.rita-card {
+  margin: 0 20px;
+  background: var(--rubi-ink);
+  color: var(--rubi-cream);
+  border-radius: 20px;
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.rita-card:active { transform: scale(0.98); }
+.rita-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  background: var(--rubi-yellow);
+  border-radius: 50%;
+  opacity: 0.15;
+}
+.rita-avatar {
+  width: 64px; height: 64px;
+  background: var(--rubi-yellow);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+.rita-avatar svg { width: 56px; height: 56px; }
+.rita-text { flex: 1; position: relative; z-index: 1; }
+.rita-text h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+.rita-text p {
+  font-size: 13px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+.rita-card svg.arrow {
+  width: 20px; height: 20px;
+  stroke: var(--rubi-cream);
+  position: relative; z-index: 1;
+}
+
+/* Category chips */
+.chip-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 20px 4px;
+  scrollbar-width: none;
+}
+.chip-scroll::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--rubi-ink);
+  transition: all 0.15s;
+}
+.chip.active {
+  background: var(--rubi-ink);
+  color: var(--rubi-cream);
+  border-color: var(--rubi-ink);
+}
+.chip:active { transform: scale(0.95); }
+
+/* Day selector (4 días de la Festa Major) */
+.day-selector {
+  display: flex;
+  gap: 6px;
+  padding: 0 20px;
+  margin-bottom: 14px;
+}
+.day-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  background: var(--rubi-white);
+  border: 1.5px solid var(--rubi-line);
+  border-radius: 14px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.day-chip .day-name {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rubi-ink-soft);
+  margin-bottom: 2px;
+}
+.day-chip .day-num {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--rubi-ink);
+}
+.day-chip.active {
+  background: var(--rubi-red);
+  border-color: var(--rubi-red);
+}
+.day-chip.active .day-name,
+.day-chip.active .day-num { color: var(--rubi-cream); }
+.day-chip.today { border-color: var(--rubi-yellow); border-width: 2px; }
+.day-chip:active { transform: scale(0.96); }
+
+/* Event cards */
+.events-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.shops-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 20px 16px;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.shops-scroll::-webkit-scrollbar { display: none; }
+.destacat-card {
+  flex-shrink: 0;
+  width: 200px;
+  scroll-snap-align: start;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.destacat-card:active { transform: scale(0.97); }
+.destacat-card img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+.destacat-card-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.72));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 20px 10px 9px;
+  line-height: 1.3;
+}
+
+
+
+
+
+.event-card {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.event-card:active { transform: scale(0.99); border-color: var(--rubi-red); }
+
+.event-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--rubi-cream);
+  border-radius: 10px;
+  padding: 8px 0;
+  min-width: 56px;
+  flex-shrink: 0;
+}
+.event-time .hour {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--rubi-red);
+}
+.event-time .min {
+  font-size: 11px;
+  color: var(--rubi-ink-soft);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.event-info { flex: 1; min-width: 0; }
+.event-cat {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.event-title {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+  color: var(--rubi-ink);
+}
+.event-loc {
+  font-size: 12px;
+  color: var(--rubi-ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.event-loc svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+/* Category colors */
+.cat-musica { background: #FFE5E5; color: #B30016; }
+.cat-infantil { background: #FFF2CC; color: #8B6914; }
+.cat-tradicio { background: #E8DDF5; color: #5B2D8C; }
+.cat-esport { background: #D6EFE5; color: #0E5C3C; }
+.cat-cultura { background: #FFE0CC; color: #8C3E00; }
+.cat-gastro { background: #FCE0E8; color: #8C1F3D; }
+.cat-nit { background: #1A1A1A; color: #F4C430; }
+
+/* ============ MAP VIEW ============ */
+.map-container {
+  flex: 1;
+  position: relative;
+  min-height: 300px;
+  width: 100%;
+  height: 100%;
+}
+#map {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #DDD7C7;
+}
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #DDD7C7 !important;
+}
+.map-filter-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 500;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.map-filter-bar .chip-scroll { padding: 0; }
+.map-filter-bar .chip { background: transparent; border-color: var(--rubi-line); }
+
+.map-info-card {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 500;
+  background: var(--rubi-white);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  transform: translateY(120%);
+  transition: transform 0.3s ease;
+}
+.map-info-card.visible { transform: translateY(0); }
+.map-info-close {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--rubi-cream);
+  display: flex; align-items: center; justify-content: center;
+}
+.map-info-close svg { width: 14px; height: 14px; }
+
+/* ============ CHAT VIEW ============ */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--rubi-cream);
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.chat-header {
+  padding: 16px 18px;
+  background: var(--rubi-white);
+  border-bottom: 1px solid var(--rubi-line);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.chat-rita-avatar {
+  width: 44px; height: 44px;
+  background: var(--rubi-yellow);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+.chat-rita-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 12px; height: 12px;
+  background: #22C55E;
+  border: 2px solid var(--rubi-white);
+  border-radius: 50%;
+}
+.chat-rita-avatar svg { width: 36px; height: 36px; }
+.chat-rita-info h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+}
+.chat-rita-info p {
+  font-size: 12px;
+  color: var(--rubi-ink-soft);
+}
+
+.chat-messages {
+  flex: 1 1 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  animation: msgIn 0.3s ease;
+}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg.bot {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  align-self: flex-start;
+  border-bottom-left-radius: 6px;
+}
+.msg.user {
+  background: var(--rubi-red);
+  color: var(--rubi-cream);
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+}
+
+.msg-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.msg-event {
+  background: var(--rubi-cream);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.msg-event:active { transform: scale(0.98); }
+.msg-event-time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--rubi-red);
+  flex-shrink: 0;
+}
+.msg-event-info { flex: 1; min-width: 0; }
+.msg-event-title { font-weight: 600; font-size: 12px; line-height: 1.3; }
+.msg-event-loc { font-size: 11px; color: var(--rubi-ink-soft); margin-top: 2px; }
+
+.msg-shop {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FAEEDA 100%);
+  border: 1px solid #F4C430;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+}
+.msg-shop:active { transform: scale(0.98); }
+.msg-shop-icon {
+  width: 36px; height: 36px;
+  background: var(--rubi-white);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.msg-shop .msg-event-title { color: var(--rubi-ink); }
+.msg-shop .msg-event-loc { color: #8B5A0B; font-weight: 500; }
+
+.typing {
+  display: flex;
+  align-self: flex-start;
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 18px;
+  border-bottom-left-radius: 6px;
+  padding: 12px 16px;
+  gap: 4px;
+}
+.typing span {
+  width: 7px; height: 7px;
+  background: var(--rubi-ink-soft);
+  border-radius: 50%;
+  animation: typing 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+.suggestions {
+  padding: 8px 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.suggestions::-webkit-scrollbar { display: none; }
+.suggestion {
+  padding: 8px 14px;
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--rubi-ink);
+  flex-shrink: 0;
+}
+
+.chat-input-bar {
+  padding: 10px 12px 12px;
+  background: var(--rubi-white);
+  border-top: 1px solid var(--rubi-line);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.chat-input-bar input {
+  flex: 1;
+  background: var(--rubi-cream);
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 14px;
+  outline: none;
+}
+.chat-send-btn {
+  width: 42px; height: 42px;
+  background: var(--rubi-red);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.chat-send-btn:active { transform: scale(0.92); }
+.chat-send-btn svg { width: 18px; height: 18px; stroke: var(--rubi-cream); fill: none; stroke-width: 2.5; }
+
+/* ============ BOTTOM NAV ============ */
+.bottom-nav {
+  display: flex;
+  background: var(--rubi-white);
+  border-top: 1px solid var(--rubi-line);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+.nav-btn {
+  flex: 1;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--rubi-ink-soft);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: color 0.15s;
+}
+.nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.nav-btn.active { color: var(--rubi-red); }
+
+/* ============ DETAIL MODAL ============ */
+.detail-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+}
+.detail-modal.visible { display: flex; }
+.detail-sheet {
+  background: var(--rubi-cream);
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height: 80%;
+  overflow-y: auto;
+  animation: sheetUp 0.3s ease;
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.detail-handle {
+  width: 40px; height: 4px;
+  background: var(--rubi-line);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.detail-close {
+  position: absolute;
+  top: 24px; right: 24px;
+  width: 32px; height: 32px;
+  background: var(--rubi-white);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.detail-cat-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.detail-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rubi-line);
+  font-size: 14px;
+}
+.detail-row:last-of-type { border-bottom: none; }
+.detail-row svg { width: 18px; height: 18px; stroke: var(--rubi-red); flex-shrink: 0; }
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+.detail-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.detail-actions svg { width: 16px; height: 16px; }
+.btn-primary { background: var(--rubi-red); color: var(--rubi-cream); }
+.btn-primary svg { stroke: var(--rubi-cream); fill: none; stroke-width: 2; }
+.btn-secondary { background: var(--rubi-white); border: 1px solid var(--rubi-line); color: var(--rubi-ink); }
+.btn-secondary svg { stroke: var(--rubi-ink); fill: none; stroke-width: 2; }
+
+/* Custom Leaflet marker */
+.rubi-marker {
+  width: 36px; height: 36px;
+  background: var(--rubi-red);
+  border: 3px solid var(--rubi-cream);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+}
+.rubi-marker.cat-musica { background: #B30016; }
+.rubi-marker.cat-infantil { background: #D4A011; }
+.rubi-marker.cat-tradicio { background: #7B3FB8; }
+.rubi-marker.cat-esport { background: #1A8758; }
+.rubi-marker.cat-cultura { background: #C25410; }
+.rubi-marker.cat-gastro { background: #B82A55; }
+.rubi-marker.cat-nit { background: #1A1A1A; }
+.rubi-marker span {
+  font-size: 16px;
+  transform: rotate(45deg);
+}
+
+.shop-marker {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #F4C430 0%, #D4A011 100%);
+  border: 3px solid var(--rubi-cream);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 8px rgba(180, 130, 0, 0.4);
+  position: relative;
+}
+.shop-marker::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid #D4A011;
+}
+.shop-marker span { font-size: 16px; }
+
+/* Toast */
+.toast {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--rubi-ink);
+  color: var(--rubi-cream);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s;
+  z-index: 600;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ============ ADMIN PANEL ============ */
+.admin-container {
+  background: #F5F2EC;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.admin-header {
+  background: linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%);
+  color: var(--rubi-cream);
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  border-bottom: 3px solid var(--rubi-yellow);
+}
+.admin-eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+.admin-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.admin-logout {
+  background: rgba(255,255,255,0.1);
+  color: var(--rubi-cream);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.admin-logout svg { width: 14px; height: 14px; }
+.admin-logout:active { background: rgba(255,255,255,0.2); }
+
+.admin-tabs {
+  display: flex;
+  background: var(--rubi-white);
+  border-bottom: 1px solid var(--rubi-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.admin-tabs::-webkit-scrollbar { display: none; }
+.admin-tab {
+  padding: 12px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rubi-ink-soft);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.admin-tab.active {
+  color: var(--rubi-red);
+  border-bottom-color: var(--rubi-red);
+}
+
+.admin-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  min-height: 0;
+}
+.admin-tab-content { display: none; }
+.admin-tab-content.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--rubi-ink-soft);
+  margin: 0 0 10px;
+}
+
+.admin-card {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.admin-stat-card {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 14px;
+  padding: 14px;
+}
+.admin-stat-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.admin-stat-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.admin-stat-label {
+  font-size: 12px;
+  color: var(--rubi-ink-soft);
+  margin-top: 4px;
+}
+.admin-stat-trend {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.admin-stat-trend.positive { color: #1A8758; }
+.admin-stat-trend.negative { color: #B30016; }
+
+.admin-rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rubi-line);
+}
+.admin-rank-item:last-child { border-bottom: none; }
+.admin-rank-num {
+  width: 26px; height: 26px;
+  background: var(--rubi-cream);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--rubi-red);
+  flex-shrink: 0;
+}
+.admin-rank-info { flex: 1; min-width: 0; }
+.admin-rank-title {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-rank-stat {
+  font-size: 11px;
+  color: var(--rubi-ink-soft);
+}
+.admin-rank-bar {
+  width: 60px;
+  height: 6px;
+  background: var(--rubi-cream);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.admin-rank-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rubi-red), var(--rubi-yellow));
+  border-radius: 3px;
+}
+
+.admin-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 120px;
+  padding: 8px 0;
+}
+.admin-chart-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--rubi-red) 0%, var(--rubi-red-dark) 100%);
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: opacity 0.2s;
+  position: relative;
+}
+.admin-chart-bar:hover { opacity: 0.8; }
+.admin-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--rubi-ink-soft);
+  margin-top: 8px;
+}
+
+.admin-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-cat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.admin-cat-label {
+  width: 110px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.admin-cat-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--rubi-cream);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.admin-cat-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+.admin-cat-value {
+  width: 36px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--rubi-ink-soft);
+  flex-shrink: 0;
+}
+
+.admin-btn-primary {
+  background: var(--rubi-red);
+  color: var(--rubi-cream);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-btn-primary:active { background: var(--rubi-red-dark); }
+
+.admin-search-bar {
+  margin-bottom: 12px;
+}
+.admin-search-bar input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--rubi-line);
+  border-radius: 10px;
+  font-size: 13px;
+  background: var(--rubi-white);
+  outline: none;
+}
+.admin-search-bar input:focus { border-color: var(--rubi-red); }
+
+.admin-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-event-row {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.admin-event-time {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--rubi-red);
+  width: 44px;
+  flex-shrink: 0;
+}
+.admin-event-info { flex: 1; min-width: 0; }
+.admin-event-info-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-event-info-meta {
+  font-size: 11px;
+  color: var(--rubi-ink-soft);
+}
+.admin-event-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.admin-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--rubi-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.admin-icon-btn:active { background: var(--rubi-line); }
+.admin-icon-btn.danger:active { background: #FFE5E5; }
+
+.admin-banner {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FAEEDA 100%);
+  border: 1px solid #F4C430;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #6B4500;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.admin-shops-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.admin-shop-card {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 12px;
+  padding: 12px;
+}
+.admin-shop-card-icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.admin-shop-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-shop-card-type {
+  font-size: 11px;
+  color: var(--rubi-ink-soft);
+  margin-bottom: 8px;
+}
+.admin-shop-card-stats {
+  font-size: 11px;
+  color: #1A8758;
+  font-weight: 600;
+}
+
+.admin-heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--rubi-ink-soft);
+  margin: 10px 0;
+}
+.admin-heatmap-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #22C55E, #FACC15, #F97316, #DC2626);
+}
+
+/* Aviso DEMO profesional */
+.admin-demo-notice {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  border-left: 4px solid #F59E0B;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+.admin-demo-notice-icon {
+  font-size: 18px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.admin-demo-notice-text {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #78350F;
+}
+.admin-demo-notice-text strong {
+  color: #451A03;
+  font-weight: 700;
+}
+
+.admin-export-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.admin-export-card {
+  background: var(--rubi-white);
+  border: 1px solid var(--rubi-line);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.admin-export-card:active {
+  transform: scale(0.97);
+  border-color: var(--rubi-red);
+}
+.admin-export-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.admin-export-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.admin-export-desc {
+  font-size: 10px;
+  color: var(--rubi-ink-soft);
+  line-height: 1.4;
+}
+
+/* Heatmap visualization dots */
+.heatmap-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.header-icon-btn svg { width:20px; height:20px; }
+.danexa-credit { text-align:center; padding:24px 0 16px; }
+.danexa-credit button { background:none; border:none; cursor:pointer; font-family:var(--font-body); font-size:12px; color:var(--rubi-ink-soft); letter-spacing:0.02em; padding:6px 10px; }
+.danexa-credit strong { color:var(--rubi-red); font-weight:700; }
+
+.danexa-pill { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,0.15); color:var(--rubi-cream); border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:5px 11px; font-family:var(--font-body); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.danexa-pill:active { background:rgba(255,255,255,0.28); }
+.splash-credit { margin-top:22px; font-size:12px; color:rgba(250,245,236,0.72); letter-spacing:0.03em; cursor:default; }
+.splash-credit strong { color:var(--rubi-yellow); font-weight:700; }
+.danexa-credit button { color:var(--rubi-ink-soft); font-weight:600; }
+.danexa-credit strong { color:var(--rubi-red); font-weight:800; }
+
+.chat-mic-btn { width:44px; height:44px; flex:none; border-radius:50%; background:var(--rubi-yellow); color:var(--rubi-ink); display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; margin-right:6px; box-shadow:0 2px 8px rgba(0,0,0,0.12); }
+.chat-mic-btn svg { width:20px; height:20px; }
+.chat-mic-btn:active { transform:scale(0.92); }
+.chat-mic-btn.listening { animation:micPulse 1s infinite; }
+@keyframes micPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(200,16,46,0.55);} 50%{ box-shadow:0 0 0 9px rgba(200,16,46,0);} }
+.tts-btn { margin-top:8px; display:inline-flex; align-items:center; gap:4px; background:var(--rubi-cream); border:1px solid var(--rubi-line); border-radius:999px; padding:4px 12px; font-size:12px; color:var(--rubi-ink-soft); cursor:pointer; font-family:var(--font-body); }
+.tts-btn:active { background:var(--rubi-line); }
+@keyframes pereGlow { 0%,100%{ box-shadow:0 6px 20px rgba(0,0,0,0.10);} 50%{ box-shadow:0 6px 26px rgba(244,196,48,0.55);} }
+.rita-card { position:relative; }
+.rita-poke { position:absolute; right:14px; bottom:11px; display:inline-flex; align-items:center; gap:5px; background:var(--rubi-yellow); color:var(--rubi-ink); font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; box-shadow:0 4px 10px rgba(0,0,0,0.28); animation:pokeBounce 1.05s ease-in-out infinite; pointer-events:none; z-index:2; }
+@keyframes pokeBounce { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
+.chat-hint { text-align:center; font-size:12px; color:var(--rubi-ink-soft); padding:2px 8px 8px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ SPLASH ============ -->
+  <div class="splash" id="splash">
+    <div class="splash-decor top">✦</div>
+    <div class="splash-decor bottom">✧</div>
+
+    <div class="splash-lang">
+      <button class="active" data-lang="ca" onclick="setLang('ca')">CAT</button>
+      <button data-lang="es" onclick="setLang('es')">CAST</button>
+    </div>
+
+    <div class="splash-logo">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" fill="#C8102E"/>
+        <path d="M30 60 Q40 35, 50 40 Q60 35, 70 60 L65 70 L35 70 Z" fill="#F4C430"/>
+        <circle cx="50" cy="35" r="6" fill="#F4C430"/>
+        <path d="M25 25 L30 30 M75 25 L70 30 M50 18 L50 24" stroke="#F4C430" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <h1 lang-ca="Festa<em>Rubí</em>" lang-es="Festa<em>Rubí</em>">Festa<em>Rubí</em></h1>
+    <p class="splash-subtitle" lang-ca="La teva guia intel·ligent de la Festa Major. Pregunta al Pere què fer i mira-ho al mapa." lang-es="Tu guía inteligente de la Fiesta Mayor. Pregunta a Pere qué hacer y míralo en el mapa."></p>
+
+    <button class="splash-btn" onclick="enterApp()">
+      <span lang-ca="Comencem" lang-es="Empezamos">Comencem</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M5 12h14M13 6l6 6-6 6"/>
+      </svg>
+    </button>
+    <div class="splash-credit" onclick="(function(){})()">✦ <span lang-ca="Una creació de" lang-es="Una creación de">Una creació de</span> <strong>Danexa&nbsp;IA</strong></div>
+  </div>
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="42" fill="#C8102E"/>
+          <path d="M30 60 Q40 35, 50 40 Q60 35, 70 60 L65 70 L35 70 Z" fill="#F4C430"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">Festa<em>Rubí</em></div>
+        <div style="font-size: 10px; opacity: 0.75; margin-top: -2px;" id="header-date">26–29 juny · Sant Pere</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="danexa-pill" onclick="openAbout()" title="Una creació de Danexa IA" aria-label="Sobre Danexa IA">✨ Danexa IA</button>
+      <button class="header-icon-btn" onclick="toggleLang()" title="Idioma">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- HOME VIEW -->
+    <section class="view active" id="view-home">
+      <div class="home-scroll">
+
+        <div class="hero">
+          <div class="hero-eyebrow" lang-ca="Festa Major 2026" lang-es="Fiesta Mayor 2026">Festa Major 2026</div>
+          <h2 lang-ca="Què vols fer <em>avui</em>?" lang-es="¿Qué quieres hacer <em>hoy</em>?">Què vols fer <em>avui</em>?</h2>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-num" id="stat-events">40</div>
+              <div class="hero-stat-label" lang-ca="Activitats" lang-es="Actividades">Activitats</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-num" id="stat-spaces">0</div>
+              <div class="hero-stat-label" lang-ca="Espais" lang-es="Espacios">Espais</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-num">4d</div>
+              <div class="hero-stat-label" lang-ca="De festa" lang-es="De fiesta">De festa</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rita-card" onclick="goView('chat')">
+          <div class="rita-poke">👆 <span lang-ca="Toca per parlar" lang-es="Toca para hablar">Toca per parlar</span></div>
+          <div class="rita-avatar">
+            <svg viewBox="0 0 100 100" fill="none">
+              <circle cx="50" cy="55" r="35" fill="#FFE4C4"/>
+              <path d="M28 60 Q28 82 50 86 Q72 82 72 60 Q72 70 60 73 Q50 75 40 73 Q28 70 28 60 Z" fill="#FFFFFF"/>
+              <circle cx="42" cy="55" r="2.5" fill="#1A1A1A"/>
+              <circle cx="58" cy="55" r="2.5" fill="#1A1A1A"/>
+              <path d="M44 63 Q50 66 56 63" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <circle cx="36" cy="62" r="2.5" fill="#FFB6B6" opacity="0.6"/>
+              <circle cx="64" cy="62" r="2.5" fill="#FFB6B6" opacity="0.6"/>
+              <path d="M22 47 Q22 22 50 22 Q78 22 78 47 L78 42 Q50 32 22 42 Z" fill="#C8102E"/>
+              <ellipse cx="78" cy="24" rx="6" ry="5" fill="#C8102E"/>
+              <g transform="translate(50, 92) rotate(-25)">
+                <circle cx="-8" cy="0" r="3.5" fill="none" stroke="#F4C430" stroke-width="2"/>
+                <rect x="-6" y="-1" width="13" height="2" fill="#F4C430"/>
+                <rect x="5" y="-3" width="2" height="2" fill="#F4C430"/>
+                <rect x="5" y="1" width="2" height="2" fill="#F4C430"/>
+              </g>
+              <g transform="translate(50, 92) rotate(25)">
+                <circle cx="-8" cy="0" r="3.5" fill="none" stroke="#F4C430" stroke-width="2"/>
+                <rect x="-6" y="-1" width="13" height="2" fill="#F4C430"/>
+                <rect x="5" y="-3" width="2" height="2" fill="#F4C430"/>
+                <rect x="5" y="1" width="2" height="2" fill="#F4C430"/>
+              </g>
+            </svg>
+          </div>
+          <div class="rita-text">
+            <h3 lang-ca="Hola! Soc en Pere" lang-es="¡Hola! Soy Pere">Hola! Soc en Pere</h3>
+            <p lang-ca="Pregunta'm què fer i et recomano segons els teus gustos" lang-es="Pregúntame qué hacer y te recomiendo según tus gustos">Pregunta'm què fer i et recomano segons els teus gustos</p>
+          </div>
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+
+        <div class="section">
+          <div class="section-title">
+            <span lang-ca="Pròximes activitats" lang-es="Próximas actividades">Pròximes activitats</span>
+            <a onclick="goView('map')" lang-ca="Veure al mapa →" lang-es="Ver en el mapa →">Veure al mapa →</a>
+          </div>
+        </div>
+
+        <div class="day-selector" id="home-days"></div>
+        <div class="chip-scroll" id="home-chips"></div>
+        <div style="height: 12px;"></div>
+        <div class="events-list" id="home-events"></div>
+
+        <!-- ACTES DESTACATS -->
+        <div class="section" style="margin-top: 16px;">
+          <div class="section-title">
+            <span lang-ca="Actes destacats" lang-es="Actos destacados">Actes destacats</span>
+            <span style="font-family:var(--font-body);font-size:11px;color:var(--rubi-ink-soft);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;">⭐ No et perdis</span>
+          </div>
+        </div>
+        <div class="shops-scroll" id="home-destacats"></div>
+
+        <!-- Crèdit Danexa IA -->
+        <div class="danexa-credit">
+          <button onclick="openAbout()">✨ <span lang-ca="Una creació de" lang-es="Una creación de">Una creació de</span> <strong>Danexa&nbsp;IA</strong> →</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- MAP VIEW -->
+    <section class="view" id="view-map">
+      <div class="map-container">
+        <div class="map-filter-bar">
+          <div class="day-selector" id="map-days" style="margin-bottom: 8px;"></div>
+          <div class="chip-scroll" id="map-chips"></div>
+        </div>
+        <div id="map"></div>
+        <div class="map-info-card" id="map-info">
+          <button class="map-info-close" onclick="closeMapInfo()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+          <div id="map-info-content"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAT VIEW -->
+    <section class="view" id="view-chat">
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-rita-avatar">
+            <svg viewBox="0 0 100 100" fill="none">
+              <circle cx="50" cy="55" r="35" fill="#FFE4C4"/>
+              <path d="M28 60 Q28 82 50 86 Q72 82 72 60 Q72 70 60 73 Q50 75 40 73 Q28 70 28 60 Z" fill="#FFFFFF"/>
+              <circle cx="42" cy="55" r="2.5" fill="#1A1A1A"/>
+              <circle cx="58" cy="55" r="2.5" fill="#1A1A1A"/>
+              <path d="M44 63 Q50 66 56 63" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <path d="M22 47 Q22 22 50 22 Q78 22 78 47 L78 42 Q50 32 22 42 Z" fill="#C8102E"/>
+              <ellipse cx="78" cy="24" rx="6" ry="5" fill="#C8102E"/>
+              <g transform="translate(50, 92) rotate(-25)">
+                <circle cx="-8" cy="0" r="3.5" fill="none" stroke="#F4C430" stroke-width="2"/>
+                <rect x="-6" y="-1" width="13" height="2" fill="#F4C430"/>
+              </g>
+              <g transform="translate(50, 92) rotate(25)">
+                <circle cx="-8" cy="0" r="3.5" fill="none" stroke="#F4C430" stroke-width="2"/>
+                <rect x="-6" y="-1" width="13" height="2" fill="#F4C430"/>
+              </g>
+            </svg>
+          </div>
+          <div class="chat-rita-info">
+            <h3>Pere</h3>
+            <p lang-ca="Assistent de la Festa Major" lang-es="Asistente de la Fiesta Mayor">Assistent de la Festa Major</p>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="suggestions" id="chat-suggestions"></div>
+
+        <div class="chat-hint" lang-ca="🎤 Escriu, o parla amb el micròfon del teclat" lang-es="🎤 Escribe, o habla con el micrófono del teclado"></div>
+        <div class="chat-input-bar">
+          <input type="text" id="chat-input" placeholder="Pregunta'm el que vulguis..." onkeydown="if(event.key==='Enter') sendMessage()">
+                    <button class="chat-send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ADMIN VIEW (Panel del Ayuntamiento) ============ -->
+    <section class="view" id="view-admin">
+      <div class="admin-container">
+
+        <!-- Admin header -->
+        <div class="admin-header">
+          <div>
+            <div class="admin-eyebrow">Panel d'administració</div>
+            <h2 class="admin-title">Ajuntament de Rubí</h2>
+          </div>
+          <button class="admin-logout" onclick="exitAdmin()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Sortir
+          </button>
+        </div>
+
+        <!-- Admin tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="dashboard" onclick="adminGoTab('dashboard')">📊 Dashboard</button>
+          <button class="admin-tab" data-tab="events" onclick="adminGoTab('events')">📅 Esdeveniments</button>
+          <button class="admin-tab" data-tab="shops" onclick="adminGoTab('shops')">🏪 Comerços</button>
+          <button class="admin-tab" data-tab="heatmap" onclick="adminGoTab('heatmap')">🔥 Mapa de calor</button>
+          <button class="admin-tab" data-tab="export" onclick="adminGoTab('export')">📥 Exportar</button>
+        </div>
+
+        <!-- Admin content -->
+        <div class="admin-content">
+
+          <!-- DASHBOARD TAB -->
+          <div class="admin-tab-content active" id="admin-dashboard">
+            <div class="admin-section-label">Visió general — Festa Major 2026 (dades de demostració)</div>
+
+            <div class="admin-stats-grid">
+              <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:#FFE5E5;color:#B30016;">👥</div>
+                <div class="admin-stat-value" id="stat-sessions">—</div>
+                <div class="admin-stat-label">Visites totals (tots els dispositius)</div>
+                <div class="admin-stat-trend positive" style="font-size:10px;">Dades reals del servidor</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:#E8DDF5;color:#5B2D8C;">💬</div>
+                <div class="admin-stat-value" id="stat-chat-total">—</div>
+                <div class="admin-stat-label">Consultes al Pere (total)</div>
+                <div class="admin-stat-trend positive" id="stat-chat-trend" style="font-size:10px;">Dades reals del servidor</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:#FFF2CC;color:#8B6914;">👀</div>
+                <div class="admin-stat-value" id="stat-events-viewed">—</div>
+                <div class="admin-stat-label">Visitants únics</div>
+                <div class="admin-stat-trend positive" style="font-size:10px;">Dades reals del servidor</div>
+              </div>
+              <div class="admin-stat-card">
+                <div class="admin-stat-icon" style="background:#D6EFE5;color:#0E5C3C;">🗺️</div>
+                <div class="admin-stat-value" id="stat-top-section">—</div>
+                <div class="admin-stat-label">Secció més visitada</div>
+                <div class="admin-stat-trend" style="font-size:10px;color:#888;" id="stat-section-count"></div>
+              </div>
+            </div>
+
+            <div class="admin-section-label">Esdeveniments més consultats</div>
+            <div class="admin-card">
+              <div class="admin-rank-list" id="admin-top-events"></div>
+            </div>
+
+            <div class="admin-section-label">Activitat per hores</div>
+            <div class="admin-card">
+              <div class="admin-chart" id="admin-hours-chart"></div>
+              <div class="admin-chart-axis">
+                <span>00h</span><span>06h</span><span>12h</span><span>18h</span><span>24h</span>
+              </div>
+            </div>
+
+            <div class="admin-section-label">Seccions més visitades</div>
+            <div class="admin-card">
+              <div class="admin-cats" id="admin-cats-popular"></div>
+            </div>
+
+            <div class="admin-section-label">Darreres consultes al Pere <span style="font-size:10px;font-weight:400;color:#888;">(servidor)</span></div>
+            <div class="admin-card">
+              <div id="admin-recent-queries" style="font-size:13px;color:#444;"></div>
+            </div>
+          </div>
+
+          <!-- EVENTS TAB -->
+          <div class="admin-tab-content" id="admin-events">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div class="admin-section-label" style="margin:0;">Gestió d'esdeveniments (<span id="admin-events-count">38</span>)</div>
+              <button class="admin-btn-primary" onclick="adminNewEvent()">+ Nou esdeveniment</button>
+            </div>
+            <div class="admin-search-bar">
+              <input type="text" id="admin-events-search" placeholder="Cercar esdeveniments..." oninput="renderAdminEvents()">
+            </div>
+            <div class="admin-events-list" id="admin-events-list"></div>
+          </div>
+
+          <!-- SHOPS TAB -->
+          <div class="admin-tab-content" id="admin-shops">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div class="admin-section-label" style="margin:0;">Comerços col·laboradors (<span id="admin-shops-count">8</span>)</div>
+              <button class="admin-btn-primary" onclick="adminNewShop()">+ Nou comerç</button>
+            </div>
+            <div class="admin-banner">
+              <strong>💰 Ingressos potencials:</strong> Si cada comerç paga 30€ d'inscripció, l'app generaria <strong>240€</strong> que cobririen totalment els costos tecnològics de la setmana.
+            </div>
+            <div class="admin-shops-grid" id="admin-shops-list"></div>
+          </div>
+
+          <!-- HEATMAP TAB -->
+          <div class="admin-tab-content" id="admin-heatmap">
+            <div class="admin-section-label">Mapa de calor — concentració d'usuaris</div>
+
+            <!-- AVISO DEMO honesto y profesional -->
+            <div class="admin-demo-notice">
+              <div class="admin-demo-notice-icon">ℹ️</div>
+              <div class="admin-demo-notice-text">
+                <strong>Visualització de demostració.</strong>
+                Els punts del mapa es calculen a partir de la programació real (densitat d'actes, horaris i tipologia per espai). En producció, aquesta visualització s'alimenta de dades de geolocalització agregada i anònima dels usuaris de l'app (consentiment RGPD), opcionalment combinades amb sensors municipals WiFi/Bluetooth.
+              </div>
+            </div>
+
+            <div class="admin-card" style="padding:0; overflow:hidden;">
+              <div id="admin-heatmap-map" style="width:100%; height:380px; background:#E1F5EE; position:relative;"></div>
+            </div>
+            <div class="admin-heatmap-legend">
+              <span>Menys activitat</span>
+              <div class="admin-heatmap-bar"></div>
+              <span>Més activitat</span>
+            </div>
+
+            <div class="admin-card" style="margin-top:14px;">
+              <h4 style="font-family:var(--font-display);font-weight:600;margin-bottom:8px;">🎯 Espais amb més concentració d'actes</h4>
+              <p style="font-size:12px;color:var(--rubi-ink-soft);margin-bottom:10px;">Calculat sobre la programació oficial 2026 — ponderat per nombre d'actes, horaris i tipologia.</p>
+              <ul id="admin-heatmap-list" style="list-style:none; padding:0; font-size:13px; line-height:1.8;"></ul>
+            </div>
+
+            <div class="admin-card" style="margin-top:14px; background:#F8F9FA;">
+              <h4 style="font-family:var(--font-display);font-weight:600;margin-bottom:8px;font-size:14px;">📊 Fonts de dades en producció</h4>
+              <ul style="list-style:none; padding:0; font-size:12px; line-height:1.7; color:var(--rubi-ink-soft);">
+                <li><strong>Nivell 1 (inclòs):</strong> Geolocalització agregada dels usuaris de l'app (amb consentiment RGPD)</li>
+                <li><strong>Nivell 2 (opcional):</strong> Sensors WiFi/Bluetooth municipals (Smart City)</li>
+                <li><strong>Nivell 3 (gran escala):</strong> Integració amb operadores telefòniques (Vodafone Analytics)</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- EXPORT TAB -->
+          <div class="admin-tab-content" id="admin-export">
+            <div class="admin-section-label">Exportar dades</div>
+            <p style="font-size:14px; color:var(--rubi-ink-soft); margin-bottom:16px;">Descarrega informes en diferents formats per imprimir, compartir o analitzar.</p>
+
+            <div class="admin-export-grid">
+              <button class="admin-export-card" onclick="adminExport('events-pdf')">
+                <div class="admin-export-icon">📄</div>
+                <div class="admin-export-title">Programa complet</div>
+                <div class="admin-export-desc">PDF imprimible amb tots els esdeveniments</div>
+              </button>
+              <button class="admin-export-card" onclick="adminExport('stats-pdf')">
+                <div class="admin-export-icon">📊</div>
+                <div class="admin-export-title">Informe estadístic</div>
+                <div class="admin-export-desc">Resum d'ús i mètriques de la Festa Major</div>
+              </button>
+              <button class="admin-export-card" onclick="adminExport('events-csv')">
+                <div class="admin-export-icon">📋</div>
+                <div class="admin-export-title">Llistat Excel</div>
+                <div class="admin-export-desc">CSV d'esdeveniments per a fulls de càlcul</div>
+              </button>
+              <button class="admin-export-card" onclick="adminExport('shops-csv')">
+                <div class="admin-export-icon">🏪</div>
+                <div class="admin-export-title">Comerços</div>
+                <div class="admin-export-desc">Llistat CSV de comerços col·laboradors</div>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="home" onclick="goView('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+      <span lang-ca="Inici" lang-es="Inicio">Inici</span>
+    </button>
+    <button class="nav-btn" data-view="map" onclick="goView('map')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <span lang-ca="Mapa" lang-es="Mapa">Mapa</span>
+    </button>
+    <button class="nav-btn" data-view="chat" onclick="goView('chat')">
+      <svg viewBox="0 0 24 24"><path d="M21 12c0 4-4 7-9 7-1.5 0-3-.3-4-.7L3 20l1.5-4C3.5 15 3 13.5 3 12c0-4 4-7 9-7s9 3 9 7z"/></svg>
+      <span>Pere</span>
+    </button>
+  </nav>
+
+  <!-- ============ DETAIL MODAL ============ -->
+  <div class="detail-modal" id="detail-modal" onclick="if(event.target===this) closeDetail()">
+    <div class="detail-sheet" id="detail-sheet"></div>
+  </div>
+
+  <!-- ============ SOBRE L'APP / DANEXA IA ============ -->
+  <div class="detail-modal" id="about-modal" onclick="if(event.target===this) closeAbout()">
+    <div class="detail-sheet">
+      <div class="detail-handle"></div>
+      <button class="detail-close" onclick="closeAbout()" aria-label="Tancar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div style="padding:6px 4px 4px;">
+        <div style="text-align:center;font-family:var(--font-display);font-size:30px;font-weight:800;color:var(--rubi-red);line-height:1;">Danexa<span style="color:var(--rubi-yellow);">IA</span></div>
+        <p style="text-align:center;font-size:15px;color:var(--rubi-ink);margin:10px 0 4px;font-weight:700;" lang-ca="Fem que la teva festa sigui intel·ligent." lang-es="Hacemos que tu fiesta sea inteligente.">Fem que la teva festa sigui intel·ligent.</p>
+        <p style="text-align:center;font-size:13px;color:var(--rubi-ink-soft);margin:0 0 16px;line-height:1.5;" lang-ca="Plataformes a mida per a festes majors i esdeveniments municipals: programa complet, assistent IA i mapa interactiu, en pocs dies." lang-es="Plataformas a medida para fiestas mayores y eventos municipales: programa completo, asistente IA y mapa interactivo, en pocos días.">Plataformes a mida per a festes majors i esdeveniments municipals: programa complet, assistent IA i mapa interactiu, en pocs dies.</p>
+        <a class="btn-primary" href="https://danexaia.com" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:12px;">
+          <span lang-ca="Demana una demo · danexaia.com" lang-es="Pide una demo · danexaia.com">Demana una demo · danexaia.com</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:8px;background:var(--rubi-cream);border:1px solid var(--rubi-line);border-radius:12px;padding:9px 12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#C8102E" stroke-width="2" style="width:18px;height:18px;flex:none;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          <span style="flex:1;min-width:0;font-size:13px;color:var(--rubi-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">carmen@danexaia.com</span>
+          <button onclick="copyEmail()" style="flex:none;background:var(--rubi-red);color:#fff;border:none;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;" lang-ca="Copia" lang-es="Copiar">Copia</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+// ============ DATOS DE EVENTOS ============
+const EVENTS = [
+  {id: 1, day: 26, time: '17:00', title: {ca: "Lúmina, el bosc on tot desperta", es: "Lúmina, el bosc on tot desperta"}, place: 'Pavelló Municipal de La Llana', cat: 'cultura', lat: 41.4895, lng: 2.0335, icon: '🎨'},
+  {id: 2, day: 26, time: '19:00', title: {ca: "Seguici de Festa Major", es: "Seguici de Festa Major"}, place: 'Concentració pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 3, day: 26, time: '20:00', title: {ca: "Pregó de la Festa Major a càrrec d'Ivan Hidalgo", es: "Pregó de la Festa Major a càrrec d'Ivan Hidalgo"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '🎭'},
+  {id: 4, day: 26, time: '21:00', title: {ca: "Convit de coca de Festa Major", es: "Convit de coca de Festa Major"}, place: 'Pl. Pere Aguilera', cat: 'gastro', lat: 41.4905, lng: 2.0328, icon: '🥐'},
+  {id: 5, day: 26, time: '21:00', title: {ca: "Ballada de sardanes amb la Cobla Jovenívola de Sabadell", es: "Ballada de sardanes amb la Cobla Jovenívola de Sabadell"}, place: 'Pl. Doctor Guardiet', cat: 'tradicio', lat: 41.4908, lng: 2.034, icon: '💫'},
+  {id: 6, day: 26, time: '21:00', title: {ca: "DJ Kiki & Nuja Riman i convidats", es: "DJ Kiki & Nuja Riman i convidats"}, place: 'Pl. Pearson', cat: 'musica', lat: 41.4917, lng: 2.0344, icon: '🍷'},
+  {id: 7, day: 26, time: '21:00', title: {ca: "Concert de Valiente Folk", es: "Concert de Valiente Folk"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 8, day: 26, time: '21:00', title: {ca: "Tast de vins", es: "Tast de vins"}, place: 'El Celler', cat: 'gastro', lat: 41.4885, lng: 2.0328, icon: '🍷'},
+  {id: 9, day: 26, time: '21:00', title: {ca: "Fira d’atraccions", es: "Fira d’atraccions"}, place: 'Aparcament del Rubí Forma', cat: 'cultura', lat: 41.488, lng: 2.036, icon: '🎨'},
+  {id: 10, day: 26, time: '21:00', title: {ca: "Concert de Sal de la Tierra i micro obert", es: "Concert de Sal de la Tierra i micro obert"}, place: 'Pl. Constitució', cat: 'musica', lat: 41.4896, lng: 2.0312, icon: '🎵'},
+  {id: 11, day: 26, time: '21:00', title: {ca: "Concert de Blueroomess", es: "Concert de Blueroomess"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 12, day: 26, time: '21:00', title: {ca: "Observació astronòmica", es: "Observació astronòmica"}, place: 'Espai Ressò (av. Can Tapis, 197)', cat: 'cultura', lat: 41.496, lng: 2.038, icon: '🎨'},
+  {id: 13, day: 26, time: '21:30', title: {ca: "Concert d’Sláinte", es: "Concert d’Sláinte"}, place: 'Pl. Estanislau Figueras', cat: 'musica', lat: 41.4902, lng: 2.0338, icon: '🎵'},
+  {id: 14, day: 26, time: '21:30', title: {ca: "Concert de Möno", es: "Concert de Möno"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 15, day: 26, time: '22:00', title: {ca: "Concert de Marlena ]", es: "Concert de Marlena ]"}, place: 'Amfiteatre del parc del Castell', cat: 'tradicio', lat: 41.487, lng: 2.0305, icon: '🏛️'},
+  {id: 16, day: 26, time: '22:00', title: {ca: "Concert de l’Obrador Coral", es: "Concert de l’Obrador Coral"}, place: 'Rbla. Ferrocarril', cat: 'musica', lat: 41.4924, lng: 2.0331, icon: '🎵'},
+  {id: 17, day: 26, time: '22:30', title: {ca: "Sortida del correfoc", es: "Sortida del correfoc"}, place: 'Recorregut pel centre', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🔥'},
+  {id: 18, day: 26, time: '22:30', title: {ca: "Memorial Àngels Vilaró: The vocal night (Anna Luna i María Esteban)", es: "Memorial Àngels Vilaró: The vocal night (Anna Luna i María Esteban)"}, place: 'Ateneu Municipal', cat: 'cultura', lat: 41.4895, lng: 2.0355, icon: '🍷'},
+  {id: 19, day: 26, time: '22:30', title: {ca: "Concert de Forever de Momento", es: "Concert de Forever de Momento"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 20, day: 26, time: '22:30', title: {ca: "Telescopis al Terrat", es: "Telescopis al Terrat"}, place: 'Ateneu Municipal', cat: 'cultura', lat: 41.4895, lng: 2.0355, icon: '🎨'},
+  {id: 21, day: 26, time: '22:30', title: {ca: "Sessió de DJs Platiquetes", es: "Sessió de DJs Platiquetes"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎧'},
+  {id: 22, day: 26, time: '22:30', title: {ca: "Monòleg d’Elías Torres", es: "Monòleg d’Elías Torres"}, place: 'St. Patrick’s (c. Prim, 33)', cat: 'cultura', lat: 41.4894, lng: 2.0322, icon: '🎭'},
+  {id: 23, day: 26, time: '23:00', title: {ca: "Concert de Silver Bluesers", es: "Concert de Silver Bluesers"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 24, day: 26, time: '23:00', title: {ca: "PreInfest", es: "PreInfest"}, place: 'Pl. Doctor Guardiet', cat: 'cultura', lat: 41.4908, lng: 2.034, icon: '🎨'},
+  {id: 25, day: 26, time: '23:30', title: {ca: "Concert de Fórmula V", es: "Concert de Fórmula V"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎵'},
+  {id: 26, day: 26, time: '23:30', title: {ca: "Concert d’Ian Wilde", es: "Concert d’Ian Wilde"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 27, day: 26, time: '24:00', title: {ca: "Karaoke", es: "Karaoke"}, place: 'Pl. Doctor Guardiet', cat: 'cultura', lat: 41.4908, lng: 2.034, icon: '🎨'},
+  {id: 28, day: 26, time: '24:00', title: {ca: "Raval de foc", es: "Raval de foc"}, place: 'Pl. Nova Estació', cat: 'tradicio', lat: 41.493, lng: 2.0338, icon: '🔥'},
+  {id: 29, day: 26, time: '24:00', title: {ca: "Sessió de PD Desakatades", es: "Sessió de PD Desakatades"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'cultura', lat: 41.4897, lng: 2.0309, icon: '🎧'},
+  {id: 30, day: 26, time: '01:00', title: {ca: "Concert de Bodum Big Band", es: "Concert de Bodum Big Band"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 31, day: 26, time: '01:00', title: {ca: "Concert de Blackmore’s Rising", es: "Concert de Blackmore’s Rising"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 32, day: 26, time: '01:15', title: {ca: "Concert de Los 80 Pasajeros", es: "Concert de Los 80 Pasajeros"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎵'},
+  {id: 33, day: 26, time: '02:45', title: {ca: "ELS40 On Tour 2026", es: "ELS40 On Tour 2026"}, place: 'Escardívol', cat: 'cultura', lat: 41.4925, lng: 2.0345, icon: '🎨'},
+  {id: 34, day: 27, time: '09:00', title: {ca: "El repte de la Festa Major: troba els personatges amagats", es: "El repte de la Festa Major: troba els personatges amagats"}, place: 'Rubí (diversos punts)', cat: 'cultura', lat: 41.491, lng: 2.0327, icon: '🎨'},
+  {id: 35, day: 27, time: '09:00', title: {ca: "Torneig de frontennis per parelles", es: "Torneig de frontennis per parelles"}, place: 'Frontó de Ca n’Oriol', cat: 'esport', lat: 41.486, lng: 2.026, icon: '⚽'},
+  {id: 36, day: 27, time: '09:30', title: {ca: "Campionat de tennis de Festa Major", es: "Campionat de tennis de Festa Major"}, place: 'Rubí (diversos punts)', cat: 'esport', lat: 41.491, lng: 2.0327, icon: '⚽'},
+  {id: 37, day: 27, time: '09:30', title: {ca: "Torneig de tennis taula per a menors de 16 anys", es: "Torneig de tennis taula per a menors de 16 anys"}, place: 'Pavelló de Can Rosés', cat: 'esport', lat: 41.4955, lng: 2.029, icon: '⚽'},
+  {id: 38, day: 27, time: '09:30', title: {ca: "Torneig femení de tennis taula per a majors de 16 anys", es: "Torneig femení de tennis taula per a majors de 16 anys"}, place: 'Pavelló de Can Rosés', cat: 'esport', lat: 41.4955, lng: 2.029, icon: '⚽'},
+  {id: 39, day: 27, time: '10:00', title: {ca: "La Rambla del Joc i l’Aventura*", es: "La Rambla del Joc i l’Aventura*"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 40, day: 27, time: '10:00', title: {ca: "Classe oberta de boxa infantil i d’adults", es: "Classe oberta de boxa infantil i d’adults"}, place: 'Pl. Miquel Casas Bell (al costat del Teatre M', cat: 'esport', lat: 41.4892, lng: 2.0298, icon: '🎭'},
+  {id: 41, day: 27, time: '10:00', title: {ca: "Photocall light painting", es: "Photocall light painting"}, place: 'Pl. Antiga Estació', cat: 'infantil', lat: 41.4918, lng: 2.0322, icon: '🎈'},
+  {id: 42, day: 27, time: '10:00', title: {ca: "Vine a conèixer l’ hoquei en línia i fer pràctiques de patinatge", es: "Vine a conèixer l’ hoquei en línia i fer pràctiques de patinatge"}, place: 'Escola Pau Casals', cat: 'esport', lat: 41.488, lng: 2.028, icon: '🍷'},
+  {id: 43, day: 27, time: '11:00', title: {ca: "Taller de circ", es: "Taller de circ"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 44, day: 27, time: '11:00', title: {ca: "Story Time: Gina Ginger & The Colour Fairy", es: "Story Time: Gina Ginger & The Colour Fairy"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 45, day: 27, time: '11:00', title: {ca: "D’oca a oca... i jugant com mai!", es: "D’oca a oca... i jugant com mai!"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 46, day: 27, time: '11:00', title: {ca: "Descobreix el tennis", es: "Descobreix el tennis"}, place: 'Rubí (diversos punts)', cat: 'esport', lat: 41.491, lng: 2.0327, icon: '⚽'},
+  {id: 47, day: 27, time: '11:00', title: {ca: "Etnografia eròtica del Museu Vallhonrat", es: "Etnografia eròtica del Museu Vallhonrat"}, place: 'Museu Vallhonrat (entrada per la pl. Montserr', cat: 'cultura', lat: 41.4906, lng: 2.032, icon: '🎨'},
+  {id: 48, day: 27, time: '12:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 49, day: 27, time: '12:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 50, day: 27, time: '12:00', title: {ca: "Taller de terrissa", es: "Taller de terrissa"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🏛️'},
+  {id: 51, day: 27, time: '12:00', title: {ca: "Visita comentada a l’exposició “23 gats”", es: "Visita comentada a l’exposició “23 gats”"}, place: 'Espai Expositiu Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🍷'},
+  {id: 52, day: 27, time: '12:30', title: {ca: "Vermut musical amb Matthew Simon Quartet New Horizons", es: "Vermut musical amb Matthew Simon Quartet New Horizons"}, place: 'Ateneu Municipal', cat: 'musica', lat: 41.4895, lng: 2.0355, icon: '🎵'},
+  {id: 53, day: 27, time: '12:30', title: {ca: "Vermut musical amb La Puig Band", es: "Vermut musical amb La Puig Band"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 54, day: 27, time: '12:30', title: {ca: "Concert d’Alma de Boquerón", es: "Concert d’Alma de Boquerón"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 55, day: 27, time: '13:00', title: {ca: "Exposició “Foto Viva 2026”", es: "Exposició “Foto Viva 2026”"}, place: 'Pl. Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🍷'},
+  {id: 56, day: 27, time: '15:00', title: {ca: "Festa de l’Esport Adaptat", es: "Festa de l’Esport Adaptat"}, place: 'Pavelló Municipal de La Llana', cat: 'esport', lat: 41.4895, lng: 2.0335, icon: '⚽'},
+  {id: 57, day: 27, time: '17:00', title: {ca: "Vine a conèixer l’hoquei en línia i fer pràctiques de patinatge", es: "Vine a conèixer l’hoquei en línia i fer pràctiques de patinatge"}, place: 'Rbla. Ferrocarril', cat: 'esport', lat: 41.4924, lng: 2.0331, icon: '🍷'},
+  {id: 58, day: 27, time: '17:00', title: {ca: "Cercavila castellera", es: "Cercavila castellera"}, place: 'Recorregut pel centre', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🍷'},
+  {id: 59, day: 27, time: '17:30', title: {ca: "Fira d’atraccions", es: "Fira d’atraccions"}, place: 'Aparcament del Rubí Forma', cat: 'cultura', lat: 41.488, lng: 2.036, icon: '🎨'},
+  {id: 60, day: 27, time: '17:30', title: {ca: "Torneig d’escacs infantil", es: "Torneig d’escacs infantil"}, place: 'Pl. Catalunya', cat: 'esport', lat: 41.4914, lng: 2.0336, icon: '⚽'},
+  {id: 61, day: 27, time: '17:30', title: {ca: "Circ Bufat", es: "Circ Bufat"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 62, day: 27, time: '17:45', title: {ca: "Festival de zumba, hip-hop i dansa del ventre", es: "Festival de zumba, hip-hop i dansa del ventre"}, place: 'Rbla. Ferrocarril', cat: 'musica', lat: 41.4924, lng: 2.0331, icon: '🎵'},
+  {id: 63, day: 27, time: '18:00', title: {ca: "Rubí al Cor", es: "Rubí al Cor"}, place: 'Pati del Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 64, day: 27, time: '18:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 65, day: 27, time: '18:00', title: {ca: "Atraccions de fusta", es: "Atraccions de fusta"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 66, day: 27, time: '18:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 67, day: 27, time: '18:00', title: {ca: "Food trucks", es: "Food trucks"}, place: 'Pl. Pearson', cat: 'gastro', lat: 41.4917, lng: 2.0344, icon: '🍔'},
+  {id: 68, day: 27, time: '18:00', title: {ca: "Parada del Grup de Col·laboradors del Museu", es: "Parada del Grup de Col·laboradors del Museu"}, place: 'Illa de vianants', cat: 'cultura', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 69, day: 27, time: '18:00', title: {ca: "Arrels", es: "Arrels"}, place: 'Pl. Estanislau Figueras', cat: 'cultura', lat: 41.4902, lng: 2.0338, icon: '🎨'},
+  {id: 70, day: 27, time: '18:00', title: {ca: "Som Gent Alegre", es: "Som Gent Alegre"}, place: 'Teatre Municipal La Sala', cat: 'cultura', lat: 41.4892, lng: 2.0298, icon: '🎭'},
+  {id: 71, day: 27, time: '18:00', title: {ca: "Diada castellera", es: "Diada castellera"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '🏛️'},
+  {id: 72, day: 27, time: '18:30', title: {ca: "Visita teatralitzada a l’exposició “Sàpiens!”", es: "Visita teatralitzada a l’exposició “Sàpiens!”"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🍷'},
+  {id: 73, day: 27, time: '18:30', title: {ca: "Fotoreclam 360", es: "Fotoreclam 360"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 74, day: 27, time: '18:30', title: {ca: "Espectacle de danses orientals", es: "Espectacle de danses orientals"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 75, day: 27, time: '19:00', title: {ca: "La Ràdio al carrer", es: "La Ràdio al carrer"}, place: 'Pl. Catalunya', cat: 'cultura', lat: 41.4914, lng: 2.0336, icon: '🎨'},
+  {id: 76, day: 27, time: '19:00', title: {ca: "Moulin Rouge", es: "Moulin Rouge"}, place: 'Espai Expositiu Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🎨'},
+  {id: 77, day: 27, time: '19:00', title: {ca: "La joven de la perla", es: "La joven de la perla"}, place: 'Espai Expositiu Aula Cultural', cat: 'cultura', lat: 41.4908, lng: 2.0319, icon: '🎨'},
+  {id: 78, day: 27, time: '19:00', title: {ca: "DJ Rafa", es: "DJ Rafa"}, place: 'Pl. Pearson', cat: 'musica', lat: 41.4917, lng: 2.0344, icon: '🎧'},
+  {id: 79, day: 27, time: '19:30', title: {ca: "Sortida de la 43a Ballada de Gitanes al Carrer", es: "Sortida de la 43a Ballada de Gitanes al Carrer"}, place: 'Rubí (diversos punts)', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🎭'},
+  {id: 80, day: 27, time: '19:45', title: {ca: "Danses de Bollywood i danses de l’Índia", es: "Danses de Bollywood i danses de l’Índia"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 81, day: 27, time: '20:00', title: {ca: "43a Ballada de Gitanes al Carrer", es: "43a Ballada de Gitanes al Carrer"}, place: 'Escardívol', cat: 'tradicio', lat: 41.4925, lng: 2.0345, icon: '🎭'},
+  {id: 82, day: 27, time: '20:00', title: {ca: "1r GAER Gymnastics Fest", es: "1r GAER Gymnastics Fest"}, place: 'Sala Municipal de Gimnàstica Esportiva Cova S', cat: 'esport', lat: 41.4865, lng: 2.042, icon: '⚽'},
+  {id: 83, day: 27, time: '20:00', title: {ca: "Concert de Grove Nazar", es: "Concert de Grove Nazar"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 84, day: 27, time: '21:00', title: {ca: "La SoniK Takes the City: Red Land ft. Hugo Otto & Jaime Budokai (warm up)", es: "La SoniK Takes the City: Red Land ft. Hugo Otto & Jaime Budokai (warm up)"}, place: 'Pl. Pep Rovira', cat: 'cultura', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 85, day: 27, time: '21:00', title: {ca: "Descobreix El Casino", es: "Descobreix El Casino"}, place: 'El Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 86, day: 27, time: '21:00', title: {ca: "Concert de Grèvol", es: "Concert de Grèvol"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 87, day: 27, time: '21:30', title: {ca: "Cercavila nocturna dels Geganters de Rubí", es: "Cercavila nocturna dels Geganters de Rubí"}, place: 'Recorregut pel centre', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🍷'},
+  {id: 88, day: 27, time: '21:30', title: {ca: "Concert d’Hoguera", es: "Concert d’Hoguera"}, place: 'Pl. Estanislau Figueras', cat: 'musica', lat: 41.4902, lng: 2.0338, icon: '🎵'},
+  {id: 89, day: 27, time: '21:30', title: {ca: "Ball infantil golfo amb Lali Dance Factory", es: "Ball infantil golfo amb Lali Dance Factory"}, place: 'Pl. Doctor Guardiet', cat: 'infantil', lat: 41.4908, lng: 2.034, icon: '🎈'},
+  {id: 90, day: 27, time: '22:00', title: {ca: "40è Concurs de colles sardanistes a Rubí", es: "40è Concurs de colles sardanistes a Rubí"}, place: 'Rbla. Ferrocarril', cat: 'tradicio', lat: 41.4924, lng: 2.0331, icon: '💫'},
+  {id: 91, day: 27, time: '22:00', title: {ca: "Concert d’Els Pets", es: "Concert d’Els Pets"}, place: 'Amfiteatre del parc del Castell', cat: 'tradicio', lat: 41.487, lng: 2.0305, icon: '🏛️'},
+  {id: 92, day: 27, time: '22:00', title: {ca: "Concert de LocA: Tribut a Luz Casal", es: "Concert de LocA: Tribut a Luz Casal"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 93, day: 27, time: '22:15', title: {ca: "Concert d’Enuig", es: "Concert d’Enuig"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 94, day: 27, time: '22:30', title: {ca: "Tenet", es: "Tenet"}, place: 'Pl. Celler', cat: 'cultura', lat: 41.4885, lng: 2.0328, icon: '🎨'},
+  {id: 95, day: 27, time: '22:30', title: {ca: "Concert Púlsar Big Band plays Shorty Rogers", es: "Concert Púlsar Big Band plays Shorty Rogers"}, place: 'Ateneu Municipal', cat: 'musica', lat: 41.4895, lng: 2.0355, icon: '🎵'},
+  {id: 96, day: 27, time: '22:30', title: {ca: "La SoniK Takes the City: DJ Rambla", es: "La SoniK Takes the City: DJ Rambla"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 97, day: 27, time: '23:30', title: {ca: "Concert El Gran Guateque", es: "Concert El Gran Guateque"}, place: 'Pl. Doctor Guardiet', cat: 'musica', lat: 41.4908, lng: 2.034, icon: '🎵'},
+  {id: 98, day: 27, time: '23:30', title: {ca: "Concert de Despistaos", es: "Concert de Despistaos"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎵'},
+  {id: 99, day: 27, time: '23:30', title: {ca: "El Bòjum fora de control", es: "El Bòjum fora de control"}, place: 'Rubí (diversos punts)', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🎭'},
+  {id: 100, day: 27, time: '23:30', title: {ca: "Concert d’Aklatallots", es: "Concert d’Aklatallots"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 101, day: 27, time: '24:00', title: {ca: "Concert d’Undercovers", es: "Concert d’Undercovers"}, place: 'Pl. Anselm Clavé', cat: 'musica', lat: 41.4911, lng: 2.0316, icon: '🎵'},
+  {id: 102, day: 27, time: '24:00', title: {ca: "La SoniK Takes the City: Màrius DJ", es: "La SoniK Takes the City: Màrius DJ"}, place: 'Pl. Pep Rovira', cat: 'musica', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 103, day: 27, time: '24:45', title: {ca: "Concert d’Enyor", es: "Concert d’Enyor"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 104, day: 27, time: '01:00', title: {ca: "La SoniK Takes the City: Hëdera", es: "La SoniK Takes the City: Hëdera"}, place: 'Pl. Pep Rovira', cat: 'nit', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 105, day: 27, time: '01:30', title: {ca: "Concert d’Aquellos Años Locos: Tribut a El Canto del Loco", es: "Concert d’Aquellos Años Locos: Tribut a El Canto del Loco"}, place: 'Escardívol', cat: 'nit', lat: 41.4925, lng: 2.0345, icon: '🌙'},
+  {id: 106, day: 27, time: '01:30', title: {ca: "Concert de Momo: Tribut a Queen", es: "Concert de Momo: Tribut a Queen"}, place: 'Pl. Doctor Guardiet', cat: 'nit', lat: 41.4908, lng: 2.034, icon: '🌙'},
+  {id: 107, day: 27, time: '02:00', title: {ca: "Concert d’Angry Boobs", es: "Concert d’Angry Boobs"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'nit', lat: 41.4897, lng: 2.0309, icon: '🌙'},
+  {id: 108, day: 27, time: '02:30', title: {ca: "La SoniK Takes the City: Moldetek", es: "La SoniK Takes the City: Moldetek"}, place: 'Pl. Pep Rovira', cat: 'nit', lat: 41.4888, lng: 2.0325, icon: '🍷'},
+  {id: 109, day: 27, time: '03:45', title: {ca: "Concert de Versión Imposible", es: "Concert de Versión Imposible"}, place: 'Escardívol', cat: 'nit', lat: 41.4925, lng: 2.0345, icon: '🌙'},
+  {id: 110, day: 27, time: '06:00', title: {ca: "Xocolatada", es: "Xocolatada"}, place: 'Mercat de Festa Major 2024. FOTO: Carmelo Jim', cat: 'gastro', lat: 41.491, lng: 2.0327, icon: '☕'},
+  {id: 111, day: 28, time: '09:00', title: {ca: "Cursa de cotxes de radiocontrol a escala 1/10 elèctrics", es: "Cursa de cotxes de radiocontrol a escala 1/10 elèctrics"}, place: 'Circuit de Radiocontrol', cat: 'esport', lat: 41.485, lng: 2.044, icon: '🎪'},
+  {id: 112, day: 28, time: '09:30', title: {ca: "Torneig masculí de tennis taula per a majors de 16 anys", es: "Torneig masculí de tennis taula per a majors de 16 anys"}, place: 'Pavelló de Can Rosés', cat: 'esport', lat: 41.4955, lng: 2.029, icon: '⚽'},
+  {id: 113, day: 28, time: '10:00', title: {ca: "La Rambla del Joc i l’Aventura*", es: "La Rambla del Joc i l’Aventura*"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 114, day: 28, time: '10:00', title: {ca: "Fotografies amb càmera estereoscòpica", es: "Fotografies amb càmera estereoscòpica"}, place: 'Pl. Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🖼️'},
+  {id: 115, day: 28, time: '10:30', title: {ca: "Plantada, ruixada i sortida del Correaigües amb el Bòjum", es: "Plantada, ruixada i sortida del Correaigües amb el Bòjum"}, place: 'Rbla. Ferrocarril', cat: 'tradicio', lat: 41.4924, lng: 2.0331, icon: '👑'},
+  {id: 116, day: 28, time: '11:00', title: {ca: "Taller de circ", es: "Taller de circ"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 117, day: 28, time: '11:30', title: {ca: "Lletres en joc", es: "Lletres en joc"}, place: 'Pl. Doctor Guardiet', cat: 'infantil', lat: 41.4908, lng: 2.034, icon: '🎈'},
+  {id: 118, day: 28, time: '12:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 119, day: 28, time: '12:00', title: {ca: "a 14 h Atraccions de fusta", es: "a 14 h Atraccions de fusta"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 120, day: 28, time: '12:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 121, day: 28, time: '12:00', title: {ca: "Contes desexplicats!", es: "Contes desexplicats!"}, place: 'El Casino', cat: 'infantil', lat: 41.4889, lng: 2.0331, icon: '🎈'},
+  {id: 122, day: 28, time: '12:00', title: {ca: "Els Croods", es: "Els Croods"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🏛️'},
+  {id: 123, day: 28, time: '12:00', title: {ca: "Vermut musical: AJR Jam Session i Martí Costalago Quintet", es: "Vermut musical: AJR Jam Session i Martí Costalago Quintet"}, place: 'Ateneu Municipal', cat: 'musica', lat: 41.4895, lng: 2.0355, icon: '🎧'},
+  {id: 124, day: 28, time: '12:30', title: {ca: "Promesas del 25", es: "Promesas del 25"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 125, day: 28, time: '13:00', title: {ca: "Exposició “Foto Viva 2026”", es: "Exposició “Foto Viva 2026”"}, place: 'Pl. Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🍷'},
+  {id: 126, day: 28, time: '13:00', title: {ca: "Ruixada final del Correaigües amb el Bòjum", es: "Ruixada final del Correaigües amb el Bòjum"}, place: 'Rbla. Ferrocarril', cat: 'tradicio', lat: 41.4924, lng: 2.0331, icon: '💧'},
+  {id: 127, day: 28, time: '17:00', title: {ca: "Torneig d’escacs d’adults", es: "Torneig d’escacs d’adults"}, place: 'Pl. Catalunya', cat: 'esport', lat: 41.4914, lng: 2.0336, icon: '⚽'},
+  {id: 128, day: 28, time: '17:00', title: {ca: "Xerrada amb pilots rubinencs i exposició de vehicles", es: "Xerrada amb pilots rubinencs i exposició de vehicles"}, place: 'Escola Pau Casals', cat: 'cultura', lat: 41.488, lng: 2.028, icon: '🖼️'},
+  {id: 129, day: 28, time: '17:30', title: {ca: "Fira d’atraccions", es: "Fira d’atraccions"}, place: 'Aparcament del Rubí Forma', cat: 'cultura', lat: 41.488, lng: 2.036, icon: '🎨'},
+  {id: 130, day: 28, time: '17:30', title: {ca: "Circ Bufat", es: "Circ Bufat"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 131, day: 28, time: '18:00', title: {ca: "Rubí al Cor", es: "Rubí al Cor"}, place: 'Pati del Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 132, day: 28, time: '18:00', title: {ca: "La Rambla del Joc i l’Aventura", es: "La Rambla del Joc i l’Aventura"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 133, day: 28, time: '18:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 134, day: 28, time: '18:00', title: {ca: "Atraccions de fusta", es: "Atraccions de fusta"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 135, day: 28, time: '18:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 136, day: 28, time: '18:00', title: {ca: "Food trucks", es: "Food trucks"}, place: 'Pl. Pearson', cat: 'gastro', lat: 41.4917, lng: 2.0344, icon: '🍔'},
+  {id: 137, day: 28, time: '18:00', title: {ca: "Parada del Grup de Col·laboradors del Museu", es: "Parada del Grup de Col·laboradors del Museu"}, place: 'Illa de vianants', cat: 'cultura', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 138, day: 28, time: '18:00', title: {ca: "Arrels", es: "Arrels"}, place: 'Pl. Estanislau Figueras', cat: 'cultura', lat: 41.4902, lng: 2.0338, icon: '🎨'},
+  {id: 139, day: 28, time: '18:15', title: {ca: "Cercavila de la Irmandade Galega", es: "Cercavila de la Irmandade Galega"}, place: 'Recorregut pel centre', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🍷'},
+  {id: 140, day: 28, time: '18:30', title: {ca: "Gaspatxo popular", es: "Gaspatxo popular"}, place: 'Rbla. Ferrocarril', cat: 'gastro', lat: 41.4924, lng: 2.0331, icon: '🍽️'},
+  {id: 141, day: 28, time: '18:30', title: {ca: "Crea un circuit de reg automàtic amb Arduino", es: "Crea un circuit de reg automàtic amb Arduino"}, place: 'El Celler (Sala de Tines)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 142, day: 28, time: '18:30', title: {ca: "Tabalada", es: "Tabalada"}, place: 'Rubí (diversos punts)', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🎭'},
+  {id: 143, day: 28, time: '18:30', title: {ca: "Concert de sardanes", es: "Concert de sardanes"}, place: 'Església de Sant Pere', cat: 'tradicio', lat: 41.49, lng: 2.0318, icon: '💫'},
+  {id: 144, day: 28, time: '19:00', title: {ca: "Actuació de la CECAR", es: "Actuació de la CECAR"}, place: 'Teatre Municipal La Sala', cat: 'cultura', lat: 41.4892, lng: 2.0298, icon: '🎭'},
+  {id: 145, day: 28, time: '19:00', title: {ca: "Actuació dels grups de la Irmandade Galega", es: "Actuació dels grups de la Irmandade Galega"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 146, day: 28, time: '19:00', title: {ca: "The dig (La excavación)", es: "The dig (La excavación)"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🏛️'},
+  {id: 147, day: 28, time: '19:00', title: {ca: "The Mastermind", es: "The Mastermind"}, place: 'Espai Expositiu Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🎨'},
+  {id: 148, day: 28, time: '19:00', title: {ca: "Big eyes", es: "Big eyes"}, place: 'Espai Expositiu Aula Cultural', cat: 'cultura', lat: 41.4908, lng: 2.0319, icon: '🎨'},
+  {id: 149, day: 28, time: '19:00', title: {ca: "DJ Kiki & Nuja Riman i convidats", es: "DJ Kiki & Nuja Riman i convidats"}, place: 'Pl. Pearson', cat: 'musica', lat: 41.4917, lng: 2.0344, icon: '🍷'},
+  {id: 150, day: 28, time: '19:00', title: {ca: "Sindriada Popular", es: "Sindriada Popular"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎵'},
+  {id: 151, day: 28, time: '19:30', title: {ca: "Ballada del Bòdrium", es: "Ballada del Bòdrium"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'cultura', lat: 41.4897, lng: 2.0309, icon: '🎨'},
+  {id: 152, day: 28, time: '19:30', title: {ca: "Tabalada estàtica", es: "Tabalada estàtica"}, place: 'Pl. Onze de Setembre', cat: 'tradicio', lat: 41.4912, lng: 2.0334, icon: '🎭'},
+  {id: 153, day: 28, time: '19:30', title: {ca: "Silent disco itinerant", es: "Silent disco itinerant"}, place: 'Rubí (diversos punts)', cat: 'infantil', lat: 41.491, lng: 2.0327, icon: '🎈'},
+  {id: 154, day: 28, time: '19:45', title: {ca: "Actuació dels grup Raíces Nuevas de la Unión Extremeña de Rubí", es: "Actuació dels grup Raíces Nuevas de la Unión Extremeña de Rubí"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 155, day: 28, time: '20:00', title: {ca: "Correfoc infantil", es: "Correfoc infantil"}, place: 'Recorregut pel centre', cat: 'tradicio', lat: 41.491, lng: 2.0327, icon: '🔥'},
+  {id: 156, day: 28, time: '20:30', title: {ca: "Actuació dels grups del Centro Aragonés", es: "Actuació dels grups del Centro Aragonés"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 157, day: 28, time: '20:30', title: {ca: "DJs FMA", es: "DJs FMA"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎧'},
+  {id: 158, day: 28, time: '21:00', title: {ca: "Descobreix El Casino", es: "Descobreix El Casino"}, place: 'El Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 159, day: 28, time: '21:00', title: {ca: "Loco Bongo", es: "Loco Bongo"}, place: 'Escardívol', cat: 'cultura', lat: 41.4925, lng: 2.0345, icon: '🎨'},
+  {id: 160, day: 28, time: '21:30', title: {ca: "Concert d’Awen", es: "Concert d’Awen"}, place: 'Pl. Estanislau Figueras', cat: 'musica', lat: 41.4902, lng: 2.0338, icon: '🎵'},
+  {id: 161, day: 28, time: '21:30', title: {ca: "DJ Tofu", es: "DJ Tofu"}, place: 'CRAC (c. Sant Joan, 1)', cat: 'musica', lat: 41.4897, lng: 2.0309, icon: '🎧'},
+  {id: 162, day: 28, time: '22:00', title: {ca: "Actuació del cos de dansa de l’Esbart Dansaire de Rubí:", es: "Actuació del cos de dansa de l’Esbart Dansaire de Rubí:"}, place: 'Amfiteatre del parc del Castell', cat: 'tradicio', lat: 41.487, lng: 2.0305, icon: '🏛️'},
+  {id: 163, day: 28, time: '22:30', title: {ca: "Concert de Júlia Plans Sextet", es: "Concert de Júlia Plans Sextet"}, place: 'Ateneu Municipal', cat: 'musica', lat: 41.4895, lng: 2.0355, icon: '🎵'},
+  {id: 164, day: 28, time: '23:00', title: {ca: "Ball d’envelat", es: "Ball d’envelat"}, place: 'Pl. Doctor Guardiet', cat: 'tradicio', lat: 41.4908, lng: 2.034, icon: '🎭'},
+  {id: 165, day: 28, time: '23:30', title: {ca: "Concert de The Tyets", es: "Concert de The Tyets"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎵'},
+  {id: 166, day: 28, time: '22:30', title: {ca: "Cabaret de Circ", es: "Cabaret de Circ"}, place: 'Pl. Celler', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 167, day: 28, time: '01:15', title: {ca: "Concert de Banda Neon", es: "Concert de Banda Neon"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎵'},
+  {id: 168, day: 29, time: '08:30', title: {ca: "Matinades gralleres", es: "Matinades gralleres"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '🎭'},
+  {id: 169, day: 29, time: '10:00', title: {ca: "La Rambla del Joc i l’Aventura", es: "La Rambla del Joc i l’Aventura"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 170, day: 29, time: '10:00', title: {ca: "Aixeca el vol per la inclusió", es: "Aixeca el vol per la inclusió"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 171, day: 29, time: '10:00', title: {ca: "Despertada i plantada dels Gegants de Rubí", es: "Despertada i plantada dels Gegants de Rubí"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '👑'},
+  {id: 172, day: 29, time: '11:00', title: {ca: "Taller de circ", es: "Taller de circ"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 173, day: 29, time: '11:45', title: {ca: "Missa solemne de Sant Pere", es: "Missa solemne de Sant Pere"}, place: 'Església de Sant Pere', cat: 'tradicio', lat: 41.49, lng: 2.0318, icon: '⛪'},
+  {id: 174, day: 29, time: '12:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 175, day: 29, time: '12:00', title: {ca: "Atraccions de fusta", es: "Atraccions de fusta"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 176, day: 29, time: '12:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 177, day: 29, time: '12:00', title: {ca: "La perruca", es: "La perruca"}, place: 'El Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 178, day: 29, time: '12:00', title: {ca: "Ice Age", es: "Ice Age"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🏛️'},
+  {id: 179, day: 29, time: '13:00', title: {ca: "Exposició “Foto Viva 2026”", es: "Exposició “Foto Viva 2026”"}, place: 'Pl. Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🍷'},
+  {id: 180, day: 29, time: '13:15', title: {ca: "Ball de plaça amb els Gegants de Rubí", es: "Ball de plaça amb els Gegants de Rubí"}, place: 'Pl. Doctor Guardiet', cat: 'tradicio', lat: 41.4908, lng: 2.034, icon: '👑'},
+  {id: 181, day: 29, time: '13:30', title: {ca: "Trobada de Peres, Paus, Petres i Paules", es: "Trobada de Peres, Paus, Petres i Paules"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '🎭'},
+  {id: 182, day: 29, time: '17:30', title: {ca: "Fira d’atraccions", es: "Fira d’atraccions"}, place: 'Aparcament del Rubí Forma', cat: 'cultura', lat: 41.488, lng: 2.036, icon: '🎨'},
+  {id: 183, day: 29, time: '17:30', title: {ca: "Festroc", es: "Festroc"}, place: 'Pl. Nova Estació', cat: 'cultura', lat: 41.493, lng: 2.0338, icon: '🎨'},
+  {id: 184, day: 29, time: '17:30', title: {ca: "Circ Bufat", es: "Circ Bufat"}, place: 'El Celler (Sala Annexa)', cat: 'infantil', lat: 41.4885, lng: 2.0328, icon: '🎪'},
+  {id: 185, day: 29, time: '18:00', title: {ca: "Rubí al Cor", es: "Rubí al Cor"}, place: 'Pati del Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 186, day: 29, time: '18:00', title: {ca: "La Rambla del Joc i l’Aventura", es: "La Rambla del Joc i l’Aventura"}, place: 'Rbla. Ferrocarril', cat: 'infantil', lat: 41.4924, lng: 2.0331, icon: '🎈'},
+  {id: 187, day: 29, time: '18:00', title: {ca: "Casal Xou de l’Associació de la Gent Gran", es: "Casal Xou de l’Associació de la Gent Gran"}, place: 'Teatre Municipal La Sala', cat: 'cultura', lat: 41.4892, lng: 2.0298, icon: '🎭'},
+  {id: 188, day: 29, time: '18:00', title: {ca: "Mercat d’estiu", es: "Mercat d’estiu"}, place: 'Illa de vianants', cat: 'gastro', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 189, day: 29, time: '18:00', title: {ca: "Atraccions de fusta", es: "Atraccions de fusta"}, place: 'Pl. Pearson', cat: 'cultura', lat: 41.4917, lng: 2.0344, icon: '🎨'},
+  {id: 190, day: 29, time: '18:00', title: {ca: "Mostra d’oficis tradicionals", es: "Mostra d’oficis tradicionals"}, place: 'Pl. Pearson', cat: 'tradicio', lat: 41.4917, lng: 2.0344, icon: '🎭'},
+  {id: 191, day: 29, time: '18:00', title: {ca: "Food trucks", es: "Food trucks"}, place: 'Pl. Pearson', cat: 'gastro', lat: 41.4917, lng: 2.0344, icon: '🍔'},
+  {id: 192, day: 29, time: '18:00', title: {ca: "Parada del Grup de Col·laboradors del Museu", es: "Parada del Grup de Col·laboradors del Museu"}, place: 'Illa de vianants', cat: 'cultura', lat: 41.4915, lng: 2.033, icon: '🍷'},
+  {id: 193, day: 29, time: '18:00', title: {ca: "Arrels", es: "Arrels"}, place: 'Pl. Estanislau Figueras', cat: 'cultura', lat: 41.4902, lng: 2.0338, icon: '🎨'},
+  {id: 194, day: 29, time: '18:00', title: {ca: "La química de l’Slime", es: "La química de l’Slime"}, place: 'Pl. Antiga Estació', cat: 'infantil', lat: 41.4918, lng: 2.0322, icon: '🎈'},
+  {id: 195, day: 29, time: '18:00', title: {ca: "Plàstic preciós", es: "Plàstic preciós"}, place: 'Pl. Antiga Estació', cat: 'infantil', lat: 41.4918, lng: 2.0322, icon: '🎈'},
+  {id: 196, day: 29, time: '18:30', title: {ca: "Ballada de sardanes", es: "Ballada de sardanes"}, place: 'Pl. Pere Aguilera', cat: 'tradicio', lat: 41.4905, lng: 2.0328, icon: '💫'},
+  {id: 197, day: 29, time: '18:30', title: {ca: "Catifa de Sant Pere", es: "Catifa de Sant Pere"}, place: 'C. Maximí Fornés', cat: 'tradicio', lat: 41.4903, lng: 2.0333, icon: '🎭'},
+  {id: 198, day: 29, time: '19:00', title: {ca: "Concert de l'Escola de Música Núria Garriga", es: "Concert de l'Escola de Música Núria Garriga"}, place: 'Ateneu Municipal', cat: 'musica', lat: 41.4895, lng: 2.0355, icon: '🎵'},
+  {id: 199, day: 29, time: '19:00', title: {ca: "10.000 BC", es: "10.000 BC"}, place: 'Museu Municipal Castell (MMUC)', cat: 'tradicio', lat: 41.4872, lng: 2.0307, icon: '🏛️'},
+  {id: 200, day: 29, time: '19:00', title: {ca: "Velvet Buzzsaw", es: "Velvet Buzzsaw"}, place: 'Espai Expositiu Antiga Estació', cat: 'cultura', lat: 41.4918, lng: 2.0322, icon: '🎨'},
+  {id: 201, day: 29, time: '19:00', title: {ca: "Frida", es: "Frida"}, place: 'Espai Expositiu Aula Cultural', cat: 'cultura', lat: 41.4908, lng: 2.0319, icon: '🎨'},
+  {id: 202, day: 29, time: '19:30', title: {ca: "Una tarda de m", es: "Una tarda de m"}, place: 'Rbla. Ferrocarril', cat: 'cultura', lat: 41.4924, lng: 2.0331, icon: '🎨'},
+  {id: 203, day: 29, time: '20:00', title: {ca: "Runa", es: "Runa"}, place: 'Pl. Celler', cat: 'cultura', lat: 41.4885, lng: 2.0328, icon: '🎨'},
+  {id: 204, day: 29, time: '20:00', title: {ca: "Descobreix El Casino", es: "Descobreix El Casino"}, place: 'El Casino', cat: 'cultura', lat: 41.4889, lng: 2.0331, icon: '🎨'},
+  {id: 205, day: 29, time: '20:30', title: {ca: "Havaneres amb La Petita Havana", es: "Havaneres amb La Petita Havana"}, place: 'Pl. Doctor Guardiet', cat: 'tradicio', lat: 41.4908, lng: 2.034, icon: '⚓'},
+  {id: 206, day: 29, time: '23:00', title: {ca: "Piromusical", es: "Piromusical"}, place: 'Escardívol', cat: 'musica', lat: 41.4925, lng: 2.0345, icon: '🎆'},
+];
+
+// ============ COORDENADES VERIFICADES (Nominatim OSM) ============
+const PLACE_COORDS = {
+  'Escardívol':                      [41.4929, 2.0293],
+  'Amfiteatre parc del Castell':     [41.4944, 2.0264],
+  'Teatre Municipal La Sala':        [41.4874, 2.0354],
+  'Ateneu Municipal':                [41.4925, 2.0330],
+  'Plaça Doctor Guardiet':           [41.4919, 2.0302],
+  'Plaça Pere Aguilera':             [41.4937, 2.0311],
+  'Concentració pl. Pearson':        [41.4869, 2.0312],
+  'Plaça Pearson':                   [41.4869, 2.0312],
+  'Plaça Pep Rovira':                [41.4878, 2.0289],
+  'Plaça Anselm Clavé':             [41.4891, 2.0305],
+  'Plaça Onze de Setembre':         [41.4893, 2.0332],
+  'El Celler (Sala Annexa)':         [41.4873, 2.0332],
+  'El Celler (Sala de Tines)':       [41.4873, 2.0332],
+  'El Casino':                       [41.4895, 2.0316],
+  'Pati del Casino':                 [41.4895, 2.0318],
+  'Pavelló Municipal de La Llana':   [41.5009, 2.0296],
+  'Plaça Constitució':               [41.4851, 2.0312],
+  'Rambla Ferrocarril':              [41.4905, 2.0320],
+  'Plaça Estanislau Figueras':       [41.4880, 2.0293],
+  'Plaça Nova Estació':              [41.4915, 2.0345],
+  'Església de Sant Pere':           [41.4935, 2.0308],
+  'Espai Ressò (av. Can Tapis)':     [41.4858, 2.0382],
+  'Piscina Municipal Can Rosés':     [41.5000, 2.0305],
+  'Estadi de Petanca Cova Solera':   [41.5000, 2.0290],
+  'Plaça Antiga Estació':            [41.4888, 2.0328],
+  'c. Santa Llúcia / c. Torrijos':   [41.4877, 2.0292],
+  'Plaça Pearson (food trucks)':     [41.4869, 2.0312],
+};
+// Aplica coordenades verificades a tots els events pel nom del lloc
+EVENTS.forEach(ev => {
+  for (const [key, coords] of Object.entries(PLACE_COORDS)) {
+    if (ev.place === key || ev.place.startsWith(key)) {
+      ev.lat = coords[0]; ev.lng = coords[1];
+      break;
+    }
+  }
+});
+
+// ============ COMERCIOS COLABORADORES (demo) ============
+// Estos serían comercios reales de Rubí que pagan/se inscriben para aparecer aquí.
+// Pere los recomienda según ubicación y contexto del usuario.
+const DESTACATS = [
+  {evId: 2,  img: 'https://www.totrubi.cat/uploads/s1/27/22/01/08/cjs-0005.jpeg',
+   label: {ca: 'Seguici de Festa Major', es: 'Cortejo de Fiesta Mayor'}},
+  {evId: 81, img: 'https://www.totrubi.cat/uploads/s1/26/62/79/86/slide.jpeg',
+   label: {ca: '43a Ballada de Gitanes', es: '43ª Ballada de Gitanes'}},
+  {evId: 91, img: 'https://www.totrubi.cat/uploads/s1/26/62/52/22/whatsapp-image-2023-07-02-at-04-36-04.jpeg',
+   label: {ca: 'Concert Els Pets — RRandom', es: 'Concierto Els Pets — RRandom'}},
+  {evId: 98, img: 'https://www.totrubi.cat/uploads/s1/27/56/01/44/img20260608123030.jpeg',
+   label: {ca: 'Concert Despistaos — RRandom', es: 'Concierto Despistaos — RRandom'}},
+  {evId: 173, img: 'https://www.totrubi.cat/uploads/s1/27/23/29/04/img-1753.jpeg',
+   label: {ca: 'Els gegants ballen a l\'església', es: 'Los gigantes bailan en la iglesia'}},
+  {evId: 17, img: 'https://www.totrubi.cat/uploads/s1/26/90/26/89/pxl-20240623-222618825.jpeg',
+   label: {ca: 'Correfoc — colles de diables', es: 'Correfoc — colles de diables'}},
+];
+
+const CATEGORIES = {
+  ca: [
+    {id: 'all', label: 'Tot', icon: '✨'},
+    {id: 'musica', label: 'Música', icon: '🎵'},
+    {id: 'infantil', label: 'Infantil', icon: '🎈'},
+    {id: 'tradicio', label: 'Tradició', icon: '🎭'},
+    {id: 'esport', label: 'Esport', icon: '⚽'},
+    {id: 'cultura', label: 'Cultura', icon: '🎨'},
+    {id: 'gastro', label: 'Gastronomia', icon: '🍔'},
+    {id: 'nit', label: 'Nit Golfa', icon: '🌙'},
+  ],
+  es: [
+    {id: 'all', label: 'Todo', icon: '✨'},
+    {id: 'musica', label: 'Música', icon: '🎵'},
+    {id: 'infantil', label: 'Infantil', icon: '🎈'},
+    {id: 'tradicio', label: 'Tradición', icon: '🎭'},
+    {id: 'esport', label: 'Deporte', icon: '⚽'},
+    {id: 'cultura', label: 'Cultura', icon: '🎨'},
+    {id: 'gastro', label: 'Gastronomía', icon: '🍔'},
+    {id: 'nit', label: 'Noche Golfa', icon: '🌙'},
+  ]
+};
+
+const SUGGESTIONS = {
+  ca: [
+    "Quan canten Els Pets?",
+    "Quan actuen The Tyets?",
+    "Concerts dissabte a la nit",
+    "Plans per a nens diumenge",
+    "Què es fa el dia de Sant Pere?",
+    "Activitats a l'Escardívol"
+  ],
+  es: [
+    "¿Cuándo cantan Els Pets?",
+    "¿Cuándo actúan The Tyets?",
+    "Conciertos el sábado por la noche",
+    "Planes para niños el domingo",
+    "¿Qué se hace el día de Sant Pere?",
+    "Actividades en el Escardívol"
+  ]
+};
+
+const I18N = {
+  ca: {
+    welcome: "Bon dia! Soc en Pere 👋 La teva guia de la Festa Major de Rubí. Pregunta'm pel que vulguis: per dia, per lloc, per moment del dia o per tipus d'acte. Per exemple: \"què hi ha al Escardívol diumenge a la nit?\"",
+    typing: "està escrivint...",
+    eventsFound: "He trobat aquestes activitats per a tu:",
+    noResults: "No he trobat activitats que encaixin amb això. Prova de preguntar-me d'una altra manera!",
+    tryAsking: "Prova preguntar-me",
+    seeOnMap: "Veure al mapa",
+    addCalendar: "Afegir al calendari",
+    where: "On",
+    when: "Quan",
+    category: "Categoria",
+    addedToast: "Afegit al calendari ✓"
+  },
+  es: {
+    welcome: "¡Buenos días! Soy Pere 👋 Tu guía de la Fiesta Mayor de Rubí. Pregúntame lo que quieras: por día, por lugar, por momento del día o por tipo de acto. Por ejemplo: \"¿qué hay en el Escardívol el domingo por la noche?\"",
+    typing: "está escribiendo...",
+    eventsFound: "He encontrado estas actividades para ti:",
+    noResults: "No he encontrado actividades que encajen con eso. ¡Prueba a preguntarme de otra manera!",
+    tryAsking: "Prueba preguntarme",
+    seeOnMap: "Ver en el mapa",
+    addCalendar: "Añadir al calendario",
+    where: "Dónde",
+    when: "Cuándo",
+    category: "Categoría",
+    addedToast: "Añadido al calendario ✓"
+  }
+};
+
+// ============ STATE ============
+let LANG = 'ca';
+let CURRENT_FILTER = 'all';
+let CURRENT_DAY = 'all';
+let map = null;
+let markers = [];
+
+// Days of Festa Major Rubí 2026
+const DAYS = {
+  ca: [
+    {id: 'all', name: 'Tots', num: '4d'},
+    {id: 26, name: 'Div', num: '26'},
+    {id: 27, name: 'Dis', num: '27'},
+    {id: 28, name: 'Diu', num: '28'},
+    {id: 29, name: 'Dil', num: '29'},
+  ],
+  es: [
+    {id: 'all', name: 'Todos', num: '4d'},
+    {id: 26, name: 'Vie', num: '26'},
+    {id: 27, name: 'Sáb', num: '27'},
+    {id: 28, name: 'Dom', num: '28'},
+    {id: 29, name: 'Lun', num: '29'},
+  ]
+};
+
+// ============ HELPERS ============
+function t(key) { return I18N[LANG][key] || key; }
+function getTitle(ev) { return ev.title[LANG] || ev.title.ca; }
+function getCat(catId) {
+  const cats = CATEGORIES[LANG];
+  const found = cats.find(c => c.id === catId);
+  return found ? found.label : catId;
+}
+
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[lang-ca], [lang-es]').forEach(el => {
+    const text = el.getAttribute(`lang-${LANG}`);
+    if (text !== null) el.innerHTML = text;
+  });
+  document.getElementById('chat-input').placeholder = LANG === 'ca' ? "Pregunta'm el que vulguis..." : "Pregúntame lo que quieras...";
+  renderHome();
+  renderChips();
+  renderDays();
+  renderSuggestions();
+}
+
+function setLang(lang) {
+  LANG = lang;
+  document.querySelectorAll('.splash-lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  applyLang();
+}
+
+function toggleLang() {
+  setLang(LANG === 'ca' ? 'es' : 'ca');
+  showToast(LANG === 'ca' ? 'Idioma: Català' : 'Idioma: Castellano');
+}
+
+// ============ NAVIGATION ============
+function enterApp() {
+  document.getElementById('splash').classList.add('hidden');
+}
+
+function trackSection(name) {
+  try {
+    const st = JSON.parse(localStorage.getItem('_fmStats') || '{}');
+    st.sectionVisits = st.sectionVisits || {};
+    st.sectionVisits[name] = (st.sectionVisits[name] || 0) + 1;
+    localStorage.setItem('_fmStats', JSON.stringify(st));
+  } catch(e) {}
+}
+
+function goView(viewName) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${viewName}`).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
+  trackSection(viewName);
+
+  if (viewName === 'map') {
+    if (!map) {
+      // Iniciar el mapa con varios reintentos para asegurar que se ve
+      setTimeout(() => initMap(), 50);
+    } else {
+      // Forzar recálculo del tamaño tras la transición
+      setTimeout(() => { map.invalidateSize(true); }, 50);
+      setTimeout(() => { map.invalidateSize(true); }, 250);
+      setTimeout(() => { map.invalidateSize(true); }, 600);
+    }
+  }
+  if (viewName === 'chat' && document.getElementById('chat-messages').children.length === 0) initChat();
+}
+
+// ============ HOME RENDERING ============
+function renderChips() {
+  const cats = CATEGORIES[LANG];
+  ['home-chips', 'map-chips'].forEach(id => {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = cats.map(cat => `
+      <button class="chip ${CURRENT_FILTER === cat.id ? 'active' : ''}" onclick="setFilter('${cat.id}')">
+        <span>${cat.icon}</span> ${cat.label}
+      </button>
+    `).join('');
+  });
+}
+
+function renderDays() {
+  const days = DAYS[LANG];
+  ['home-days', 'map-days'].forEach(id => {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = days.map(d => `
+      <button class="day-chip ${CURRENT_DAY == d.id ? 'active' : ''}" onclick="setDay('${d.id}')">
+        <div class="day-name">${d.name}</div>
+        <div class="day-num">${d.num}</div>
+      </button>
+    `).join('');
+  });
+}
+
+// Devuelve los eventos filtrados por categoría Y día.
+// Ordenados cronológicamente con lógica "festa major":
+// las horas 07:00-23:59 van primero, las 00:00-06:59 (madrugada) al final.
+function getFilteredEvents() {
+  const filtered = EVENTS.filter(e => {
+    const catMatch = CURRENT_FILTER === 'all' || e.cat === CURRENT_FILTER;
+    const dayMatch = CURRENT_DAY === 'all' || String(e.day) === String(CURRENT_DAY);
+    return catMatch && dayMatch;
+  });
+  return filtered.sort((a, b) => {
+    if (a.day !== b.day) return a.day - b.day;
+    const [ha, ma] = a.time.split(':').map(Number);
+    const [hb, mb] = b.time.split(':').map(Number);
+    // Las horas <7 son madrugada → suman 24 para ir al final del día
+    const minA = (ha < 7 ? ha + 24 : ha) * 60 + ma;
+    const minB = (hb < 7 ? hb + 24 : hb) * 60 + mb;
+    return minA - minB;
+  });
+}
+
+function setFilter(catId) {
+  CURRENT_FILTER = catId;
+  renderChips();
+  renderHome();
+  if (map) renderMarkers();
+}
+
+function setDay(dayId) {
+  CURRENT_DAY = dayId === 'all' ? 'all' : parseInt(dayId);
+  renderDays();
+  renderHome();
+  if (map) renderMarkers();
+}
+
+function renderHome() {
+  const list = document.getElementById('home-events');
+  const filtered = getFilteredEvents();
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--rubi-ink-soft);font-size:13px;">
+      ${LANG === 'ca' ? "Cap activitat amb aquests filtres" : "Ninguna actividad con estos filtros"}
+    </div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(ev => {
+    const [h, m] = ev.time.split(':');
+    return `
+      <div class="event-card" onclick="openDetail(${ev.id})">
+        <div class="event-time">
+          <div class="hour">${h}</div>
+          <div class="min">${m}</div>
+        </div>
+        <div class="event-info">
+          <div class="event-cat cat-${ev.cat}">${getCat(ev.cat)}</div>
+          <div class="event-title">${getTitle(ev)}</div>
+          <div class="event-loc">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            ${ev.place}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('stat-events').textContent = EVENTS.length;
+  const uniqueSpaces = new Set(EVENTS.map(e => e.place)).size;
+  document.getElementById('stat-spaces').textContent = uniqueSpaces;
+  renderDestacats();
+}
+
+function renderDestacats() {
+  const c = document.getElementById('home-destacats');
+  if (!c) return;
+  c.innerHTML = DESTACATS.map(d => {
+    const ev = EVENTS.find(e => e.id === d.evId);
+    const label = d.label[LANG] || d.label.ca;
+    const dayNames = LANG === 'ca'
+      ? {26:'Div 26', 27:'Dis 27', 28:'Diu 28', 29:'Dil 29'}
+      : {26:'Vie 26', 27:'Sáb 27', 28:'Dom 28', 29:'Lun 29'};
+    const day = ev ? dayNames[ev.day] : '';
+    const time = ev ? ev.time + 'h' : '';
+    return `
+    <div class="destacat-card" onclick="openDetail(${d.evId})">
+      <img src="${d.img}" alt="${label}" loading="lazy" onerror="this.style.background='var(--rubi-bg-warm)';this.src=''">
+      <div class="destacat-card-label">
+        <div>${label}</div>
+        ${day ? `<div style="font-size:10px;font-weight:400;opacity:0.85;margin-top:2px">${day} · ${time}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============ MAP ============
+function initMap() {
+  // Verificar que Leaflet está cargado
+  if (typeof L === 'undefined') {
+    console.warn('Leaflet aún no cargado, reintentando...');
+    setTimeout(initMap, 200);
+    return;
+  }
+  // Verificar que el contenedor existe y tiene tamaño
+  const mapEl = document.getElementById('map');
+  if (!mapEl || mapEl.offsetHeight === 0) {
+    console.warn('Contenedor del mapa sin altura, reintentando...');
+    setTimeout(initMap, 200);
+    return;
+  }
+  try {
+    map = L.map('map', {
+      zoomControl: false,
+      tap: true,
+      tapTolerance: 15
+    }).setView([41.4910, 2.0330], 16);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19,
+      crossOrigin: true
+    }).addTo(map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    renderMarkers();
+
+    // Forzar refresh del tamaño en varios momentos por seguridad
+    setTimeout(() => map.invalidateSize(true), 100);
+    setTimeout(() => map.invalidateSize(true), 400);
+    setTimeout(() => map.invalidateSize(true), 1000);
+  } catch (e) {
+    console.error('Error inicializando el mapa:', e);
+    mapEl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#666;font-size:14px;">No s\'ha pogut carregar el mapa. Comprova la teva connexió i recarrega la pàgina.</div>';
+  }
+}
+
+function renderMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  const filtered = getFilteredEvents();
+
+  // Agrupar per lloc per evitar marcadors apilats
+  const byPlace = {};
+  filtered.forEach(ev => {
+    if (!byPlace[ev.place]) byPlace[ev.place] = [];
+    byPlace[ev.place].push(ev);
+  });
+
+  Object.values(byPlace).forEach(evs => {
+    const ev = evs[0];
+    const count = evs.length;
+    const badge = count > 1
+      ? `<span style="position:absolute;top:-5px;right:-5px;background:var(--rubi-red);color:#fff;font-size:9px;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid #FAF5EC;line-height:1">${count}</span>`
+      : '';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="rubi-marker cat-${ev.cat}" style="position:relative"><span>${ev.icon}</span>${badge}</div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36]
+    });
+    const marker = L.marker([ev.lat, ev.lng], { icon }).addTo(map);
+    marker.on('click', () => count > 1 ? showPlaceInfo(ev.place, evs) : showMapInfo(ev));
+    markers.push(marker);
+  });
+
+
+}
+
+function showPlaceInfo(place, evs) {
+  const isCA = LANG === 'ca';
+  const DAY_NAMES = isCA
+    ? {26:'Div 26', 27:'Dis 27', 28:'Diu 28', 29:'Dil 29'}
+    : {26:'Vie 26', 27:'Sáb 27', 28:'Dom 28', 29:'Lun 29'};
+  const sorted = [...evs].sort((a,b) => {
+    if (a.day !== b.day) return a.day - b.day;
+    const ha = parseInt(a.time); const hb = parseInt(b.time);
+    return (ha < 7 ? ha+24 : ha) - (hb < 7 ? hb+24 : hb);
+  });
+  document.getElementById('map-info-content').innerHTML = `
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--rubi-red);margin-bottom:8px">📍 ${place}</div>
+    <div style="font-size:12px;color:var(--rubi-ink-soft);margin-bottom:10px">${evs.length} ${isCA ? 'activitats' : 'actividades'}</div>
+    <div style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto">
+      ${sorted.map(ev => `
+        <div onclick="openDetail(${ev.id})" style="display:flex;gap:8px;align-items:flex-start;padding:7px 8px;background:#fff;border-radius:8px;border:1px solid var(--rubi-line);cursor:pointer;active:background:#f5f0e8">
+          <div style="font-size:13px;font-weight:700;color:var(--rubi-red);white-space:nowrap;min-width:38px">${ev.time}h</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--rubi-ink);line-height:1.3">${ev.icon} ${getTitle(ev).replace(/— Festival RRandom/,'').trim()}</div>
+            <div style="font-size:11px;color:var(--rubi-ink-soft)">${DAY_NAMES[ev.day]}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('map-info').classList.add('visible');
+}
+
+function showMapInfo(ev) {
+  const [h, m] = ev.time.split(':');
+  document.getElementById('map-info-content').innerHTML = `
+    <div class="event-cat cat-${ev.cat}" style="margin-bottom: 8px;">${getCat(ev.cat)}</div>
+    <div style="font-weight: 600; font-size: 15px; margin-bottom: 6px; padding-right: 28px;">${getTitle(ev)}</div>
+    <div style="display: flex; gap: 16px; font-size: 12px; color: var(--rubi-ink-soft); margin-bottom: 10px;">
+      <span>🕐 ${ev.time}h</span>
+      <span>📍 ${ev.place}</span>
+    </div>
+    <button class="btn-primary" style="width:100%; padding:10px; border-radius:10px; font-weight:600; font-size:13px;" onclick="openDetail(${ev.id})">
+      ${LANG === 'ca' ? 'Veure detalls' : 'Ver detalles'}
+    </button>
+  `;
+  document.getElementById('map-info').classList.add('visible');
+}
+
+function closeMapInfo() {
+  document.getElementById('map-info').classList.remove('visible');
+}
+
+// ============ CHAT (Pere - simulated AI) ============
+function initChat() {
+  appendBotMessage(t('welcome'));
+}
+
+function renderSuggestions() {
+  const c = document.getElementById('chat-suggestions');
+  if (!c) return;
+  c.innerHTML = SUGGESTIONS[LANG].map(s => `
+    <button class="suggestion" onclick="useSuggestion('${s.replace(/'/g, "\\'")}')">${s}</button>
+  `).join('');
+}
+
+function useSuggestion(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function appendUserMessage(text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function appendBotMessage(text, events = [], shops = []) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = text;
+  if (text && div.textContent.trim().length > 1) {
+    var _sp = document.createElement('button');
+    _sp.type = 'button'; _sp.className = 'tts-btn';
+    _sp.textContent = '🔊 ' + (LANG === 'es' ? 'Escuchar' : 'Escoltar');
+    var _plain = div.textContent;
+    _sp.onclick = function(){ speakText(_plain); };
+    div.appendChild(_sp);
+  }
+  if (events.length > 0) {
+    const evDiv = document.createElement('div');
+    evDiv.className = 'msg-events';
+    evDiv.innerHTML = events.map(ev => {
+      const tkBadge = ev.ticket ? `<span style="font-size:10px;background:${ev.ticket.price.ca==='Gratuïta'?'#2ecc71':'var(--rubi-red)'};color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle">${ev.ticket.price[LANG]||ev.ticket.price.ca}</span>` : '';
+      return `
+      <div class="msg-event" onclick="openDetail(${ev.id})">
+        <div class="msg-event-time">${ev.time}h</div>
+        <div class="msg-event-info">
+          <div class="msg-event-title">${getTitle(ev)}${tkBadge}</div>
+          <div class="msg-event-loc">📍 ${ev.place}</div>
+        </div>
+      </div>`;
+    }).join('');
+    div.appendChild(evDiv);
+  }
+  if (shops.length > 0) {
+    const shopWrap = document.createElement('div');
+    shopWrap.style.marginTop = '12px';
+    const label = document.createElement('div');
+    label.style.cssText = 'font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#9A0C24;margin-bottom:6px;display:flex;align-items:center;gap:4px;';
+    label.innerHTML = '<span>✨</span> ' + (LANG === 'ca' ? 'Comerç col·laborador' : 'Comercio colaborador');
+    shopWrap.appendChild(label);
+    const shopList = document.createElement('div');
+    shopList.className = 'msg-events';
+    shopList.innerHTML = shops.map(sh => `
+      <div class="msg-shop" onclick="openShopDetail('${sh.id}')">
+        <div class="msg-shop-icon">${sh.icon}</div>
+        <div class="msg-event-info">
+          <div class="msg-event-title">${sh.name}</div>
+          <div class="msg-event-loc">${sh.offer[LANG] || sh.offer.ca}</div>
+        </div>
+      </div>
+    `).join('');
+    shopWrap.appendChild(shopList);
+    div.appendChild(shopWrap);
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || input.disabled) return;
+  input.value = '';
+  input.disabled = true;
+  appendUserMessage(text);
+  showTyping();
+  // Tracking local
+  try {
+    const st = JSON.parse(localStorage.getItem('_fmStats') || '{}');
+    st.chatQueries = (st.chatQueries || 0) + 1;
+    localStorage.setItem('_fmStats', JSON.stringify(st));
+  } catch(e) {}
+  // Tracking servidor (analítica de Pere)
+  try {
+    const _vid = localStorage.getItem('_fmVid') || '';
+    fetch('/.netlify/functions/visit', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ type:'chat', visitorId:_vid, query:text }) }).catch(()=>{});
+  } catch(e) {}
+
+  const isCA = LANG === 'ca';
+
+  try {
+    const eventsPayload = EVENTS.map(e => ({
+      title: typeof e.title === 'object' ? (e.title[LANG] || e.title.ca) : e.title,
+      place: e.place,
+      day: e.day,
+      time: e.time,
+      cat: e.cat
+    }));
+
+    const res = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: text, lang: LANG, events: eventsPayload })
+    });
+
+    hideTyping();
+    input.disabled = false;
+    input.focus();
+
+    if (!res.ok) throw new Error('API error ' + res.status);
+
+    const data = await res.json();
+    // Convertir salts de línia i negreta a HTML
+    const htmlText = data.text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+
+    appendBotMessage(htmlText, [], []);
+  } catch (e) {
+    hideTyping();
+    input.disabled = false;
+    input.focus();
+    appendBotMessage(
+      isCA
+        ? '⚠️ No puc connectar en aquest moment. Torna-ho a intentar!'
+        : '⚠️ No puedo conectar en este momento. ¡Inténtalo de nuevo!',
+      [], []
+    );
+  }
+}
+
+// Simulated AI response (keyword based for demo)
+// ============ PERE - Lógica de comprensión ============
+// Detecta lugares, días, franjas horarias y categorías en la pregunta
+// del usuario y combina los filtros para responder con precisión.
+
+function detectPlace(q) {
+  // Mapa de aliases → nombre canónico que aparece en EVENTS.place
+  const placeMap = [
+    { aliases: ['escardivol', 'escardívol', 'escardibol'], canonical: 'Escardívol' },
+    { aliases: ['teatre la sala', 'la sala', 'teatre municipal'], canonical: 'Teatre La Sala' },
+    { aliases: ['ateneu', 'ateneu municipal'], canonical: 'Ateneu Municipal' },
+    { aliases: ['amfiteatre', 'parc del castell', 'castell'], canonical: 'Amfiteatre parc del Castell' },
+    { aliases: ['pep rovira', 'plaça pep rovira'], canonical: 'Plaça Pep Rovira' },
+    { aliases: ['pere aguilera', 'plaça pere aguilera'], canonical: 'Plaça Pere Aguilera' },
+    { aliases: ['doctor guardiet', 'guardiet'], canonical: 'Plaça Doctor Guardiet' },
+    { aliases: ['estanislau figueras', 'figueras'], canonical: 'Plaça Estanislau Figueras' },
+    { aliases: ['onze de setembre', '11 setembre'], canonical: 'Plaça Onze de Setembre' },
+    { aliases: ['s[ag]nt pere', 'iglesia', 'església de sant pere', 'església'], canonical: 'Església de Sant Pere' },
+    { aliases: ['rambla', 'ferrocarril', 'la rambla'], canonical: 'Rambla Ferrocarril' },
+    { aliases: ['piscina', 'can ros[eé]s'], canonical: 'Piscina Municipal Can Rosés' },
+    { aliases: ['petanca', 'cova solera'], canonical: 'Estadi de Petanca Cova Solera' },
+    { aliases: ['pavelló', 'pavello', 'la llana', 'poliesportiu', 'regina carmeli', 'carmeli'], canonical: 'Pavelló Municipal de La Llana' },
+    { aliases: ['antiga estació', 'antiga estacio'], canonical: 'Plaça Antiga Estació' },
+    { aliases: ['casino', 'el casino', 'pati del casino'], canonical: 'El Casino' },
+    { aliases: ['crac', 'sant joan 1', 'c sant joan'], canonical: 'C. Sant Joan, 1 (CRAC)' },
+    { aliases: ['celler', 'el celler', 'sala annexa', 'sala de tines'], canonical: 'El Celler' },
+    { aliases: ['pearson', 'plaça pearson'], canonical: 'Plaça Pearson' },
+    { aliases: ['anselm clav[eé]', 'clave', 'anslem'], canonical: 'Plaça Anselm Clavé' },
+    { aliases: ['constitució', 'constitucio', 'plaça constitució'], canonical: 'Plaça Constitució' },
+    { aliases: ['nova estació', 'nova estacio'], canonical: 'Plaça Nova Estació' },
+    { aliases: ['ressò', 'resso', 'espai resso'], canonical: 'Espai Ressò (av. Can Tapis)' },
+    { aliases: ['pearson', 'concentracio pearson'], canonical: 'Concentració pl. Pearson' },
+  ];
+  for (const p of placeMap) {
+    if (p.aliases.some(a => q.includes(a))) return p.canonical;
+  }
+  return null;
+}
+
+function detectDay(q) {
+  // Devuelve número de día (26-29) o null — Festa Major 2026: 26=Div, 27=Dis, 28=Diu, 29=Dil
+  if (/\b26\b|divendres|div\b|viernes|vie\b/.test(q)) return 26;
+  if (/\b27\b|dissabte|dis\b|s[àa]bat|sabado|sábado|s[aá]b\b/.test(q)) return 27;
+  if (/\b28\b|diumenge|diu\b|domingo|dom\b/.test(q)) return 28;
+  if (/\b29\b|dilluns|dil\b|lunes|lun\b|sant pere/.test(q)) return 29;
+  // "demà" / "mañana" / "avui" / "hoy" → relativo a hoy
+  // (Para el demo, "avui/hoy" lo mapeamos al día más cercano de la festa)
+  if (/avui|hoy|today/.test(q)) {
+    const today = new Date();
+    const m = today.getMonth(); // 5 = juny
+    const d = today.getDate();
+    if (m === 5 && d >= 26 && d <= 29) return d;
+    return null; // si no estamos en festa, no filtramos por día
+  }
+  if (/dem[àa]|mañana|tomorrow/.test(q)) {
+    const today = new Date();
+    const m = today.getMonth();
+    const d = today.getDate();
+    if (m === 5 && d >= 25 && d <= 28) return d + 1;
+    return null;
+  }
+  return null;
+}
+
+function detectTimeRange(q) {
+  // Devuelve [hStart, hEnd] o null. Usamos lógica festa major (madrugada = anterior).
+  // ¡Importante! "matinada" debe comprobarse ANTES que "mat[ií]" (que también matchea matinada).
+  if (/matinada|madrugada|after.?hours|late.?night/.test(q)) return [24, 30]; // 00-06h
+  if (/mat[ií](?!nada)|morning/.test(q)) return [7, 13];
+  if (/migdia|mediod[ií]a|midday|noon/.test(q)) return [12, 16];
+  if (/tarda|tarde|afternoon|vespre/.test(q)) return [16, 21];
+  if (/nit|noche|night|tonight/.test(q)) return [21, 30]; // 30 = 06h del día siguiente
+  return null;
+}
+
+function eventInTimeRange(ev, range) {
+  if (!range) return true;
+  const [h, m] = ev.time.split(':').map(Number);
+  // Si la hora es <7, la consideramos del día anterior → suma 24 para comparar
+  const hAdjusted = h < 7 ? h + 24 : h;
+  return hAdjusted >= range[0] && hAdjusted < range[1];
+}
+
+function detectCategory(q) {
+  if (/nen|nin|peque|infant|fill|hij|petit|kid/.test(q)) return 'infantil';
+  if (/jazz|sardan|tradici|gitanes|cultura popular|gegant|casteller/.test(q)) return null; // null = más abierto, se decidirá luego
+  if (/concert|m[úu]sica|cantant|grup|banda|rock|pop|trap|hip.?hop|electr[óò]nic/.test(q)) return 'musica';
+  if (/menj|comer\b|food|tapa|berenar|vermut|sopa|dinar|gastron|menu|men[úu]|coca/.test(q)) return 'gastro';
+  if (/esport|cors|carrera|cursa|joc|partit|petanca|atlet|futbol/.test(q)) return 'esport';
+  if (/teatre|teatro|dansa|danza|ballet|baile|opera|expo|art/.test(q)) return 'cultura';
+  if (/casteller|sardan|tradici|gitan|gegant|correfoc|seguici|preg|pas|ofici/.test(q)) return 'tradicio';
+  if (/nit golfa|after|matinada|madrugada|late|dj/.test(q)) return 'nit';
+  return null;
+}
+
+// ============ DETECCIÓ D'ARTISTA / NOM D'EVENT ============
+function detectArtist(q) {
+  const norm = s => s.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/['’\-—·]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const qn = norm(q);
+
+  // Paraules que no han de disparar un match sol
+  const stop = new Set(['concert','concierto','festival','rrandom','jornades','jornadas',
+    'amb','con','els','les','una','del','dels','per','los','las','que','com','canta',
+    'toca','actua','quan','cuando','hora','dia','dies','hay','hi','acte','actes',
+    'tribut','tributo','plays','takes','city','big','band','live','show','nou','nueva']);
+
+  const scored = EVENTS.map(ev => {
+    const allText = norm(ev.title.ca + ' ' + ev.title.es);
+    // Extreu el nom de l'artista: el que ve just després de "concert de/d'" o el títol sencer
+    const artistCA = norm(ev.title.ca)
+      .replace(/concert (de |d')/g,'')
+      .replace(/festival rrandom/g,'')
+      .replace(/\s*—.*$/,'')
+      .replace(/\s*\(.*\)$/,'')
+      .trim();
+    const artistES = norm(ev.title.es)
+      .replace(/concierto (de |d')/g,'')
+      .replace(/festival rrandom/g,'')
+      .replace(/\s*—.*$/,'')
+      .replace(/\s*\(.*\)$/,'')
+      .trim();
+
+    let score = 0;
+
+    // Bonus alt: el nom de l'artista apareix sencer a la pregunta
+    if (artistCA.length > 3 && qn.includes(artistCA)) score += 60;
+    if (artistES.length > 3 && qn.includes(artistES)) score += 60;
+
+    // Match per paraules individuals (sense stopwords) — word-level, no substring
+    const qWords = new Set(qn.split(/\s+/));
+    const words = [...new Set(allText.split(/\s+/))]
+      .filter(w => w.length >= 4 && !stop.has(w));
+    for (const w of words) {
+      if (qWords.has(w)) score += w.length * 2;
+    }
+
+    return { ev, score };
+  });
+
+  const matches = scored.filter(s => s.score > 0).sort((a,b) => b.score - a.score);
+  if (!matches.length) return [];
+  const best = matches[0].score;
+  // Retorna els que tinguen >= 60% del millor score
+  return matches.filter(m => m.score >= best * 0.6).map(m => m.ev);
+}
+
+function describeFilters(place, day, range, isCA) {
+  // Construye una frase tipo "al Escardívol, divendres a la nit"
+  const parts = [];
+  if (place) parts.push(isCA ? `a ${place}` : `en ${place}`);
+  if (day) {
+    const dayNames = isCA
+      ? {26: 'divendres 26', 27: 'dissabte 27', 28: 'diumenge 28', 29: 'dilluns 29 (Sant Pere)'}
+      : {26: 'viernes 26', 27: 'sábado 27', 28: 'domingo 28', 29: 'lunes 29 (Sant Pere)'};
+    parts.push(dayNames[day]);
+  }
+  if (range) {
+    const rangeNames = isCA
+      ? {'7-13': 'al matí', '12-16': 'al migdia', '16-21': 'a la tarda', '21-30': 'a la nit', '24-30': 'a la matinada'}
+      : {'7-13': 'por la mañana', '12-16': 'a mediodía', '16-21': 'por la tarde', '21-30': 'por la noche', '24-30': 'de madrugada'};
+    parts.push(rangeNames[`${range[0]}-${range[1]}`] || '');
+  }
+  return parts.filter(Boolean).join(' ');
+}
+
+function generateResponse(query) {
+  const q = query.toLowerCase().trim();
+  const isCA = LANG === 'ca';
+
+  const DAY_CA = {26:'divendres 26', 27:'dissabte 27', 28:'diumenge 28', 29:'dilluns 29 (Sant Pere)'};
+  const DAY_ES = {26:'viernes 26', 27:'sábado 27', 28:'domingo 28', 29:'lunes 29 (Sant Pere)'};
+
+  // 0. PRIORITAT: cerca per nom d'artista / nom d'event
+  const place = detectPlace(q);
+  const day   = detectDay(q);
+  const range = detectTimeRange(q);
+  const category = detectCategory(q);
+
+  // Helper per generar línia de tiquet
+  function ticketLine(ev) {
+    if (!ev.ticket) return '';
+    const t = ev.ticket;
+    const price = isCA ? t.price.ca : t.price.es;
+    if (t.url) {
+      const linkText = isCA ? 'Reserva aquí' : 'Reserva aquí';
+      return `<br>🎟️ <strong>${price}</strong> · <a href="${t.url}" target="_blank" style="color:var(--rubi-red)">${linkText}</a>`;
+    } else if (t.taquilla) {
+      return isCA ? `<br>🎟️ <strong>${price}</strong> · recull entrada a taquilla` : `<br>🎟️ <strong>${price}</strong> · recoge entrada en taquilla`;
+    }
+    return `<br>🎟️ <strong>${price}</strong>`;
+  }
+
+  // Pregunta sobre entrades/tiquets en general
+  if (/entrad|ticket|taquill|koobin|on compro|donde compro|on es compren|como se compran/.test(q) && !detectArtist(q).length) {
+    const paidEvents = EVENTS.filter(e => e.ticket && e.ticket.url && e.ticket.price.ca !== 'Gratuïta');
+    const freeKoobin = EVENTS.filter(e => e.ticket && e.ticket.url && e.ticket.price.ca === 'Gratuïta');
+    const freeTaquilla = EVENTS.filter(e => e.ticket && e.ticket.taquilla);
+    return {
+      text: isCA
+        ? `🎟️ <strong>Entrades per a la Festa Major 2026</strong><br><br><strong>Concerts de pagament</strong> (10 €/entrada):<br>${paidEvents.map(e => `• ${e.title.ca.replace(/— Festival RRandom.*/,'').trim()} (${DAY_CA[e.day]}, ${e.time}h)`).join('<br>')}<br><br>Compra online: <a href="https://teatreelcasinorubi.koobin.cat/" target="_blank" style="color:var(--rubi-red)">teatreelcasinorubi.koobin.cat</a><br><br><strong>Entrada gratuïta amb reserva</strong> (mateixa web):<br>${freeKoobin.map(e => `• ${e.title.ca.split('—')[0].trim()} (${DAY_CA[e.day]}, ${e.time}h)`).join('<br>')}<br><br><strong>Entrada gratuïta a taquilla</strong>:<br>${freeTaquilla.map(e => `• ${e.title.ca.split('—')[0].trim()} (${DAY_CA[e.day]}, ${e.time}h)`).join('<br>')}`
+        : `🎟️ <strong>Entradas para la Fiesta Mayor 2026</strong><br><br><strong>Conciertos de pago</strong> (10 €/entrada):<br>${paidEvents.map(e => `• ${e.title.es.replace(/— Festival RRandom.*/,'').trim()} (${DAY_ES[e.day]}, ${e.time}h)`).join('<br>')}<br><br>Compra online: <a href="https://teatreelcasinorubi.koobin.cat/" target="_blank" style="color:var(--rubi-red)">teatreelcasinorubi.koobin.cat</a><br><br><strong>Entrada gratuita con reserva</strong> (misma web):<br>${freeKoobin.map(e => `• ${e.title.es.split('—')[0].trim()} (${DAY_ES[e.day]}, ${e.time}h)`).join('<br>')}<br><br><strong>Entrada gratuita en taquilla</strong>:<br>${freeTaquilla.map(e => `• ${e.title.es.split('—')[0].trim()} (${DAY_ES[e.day]}, ${e.time}h)`).join('<br>')}`,
+      events: [], shops: []
+    };
+  }
+
+  // Activem detecció d'artista quan no hi ha filtres estructurals forts
+  if (!place && !range) {
+    const artistMatches = detectArtist(q);
+    if (artistMatches.length === 1) {
+      const ev = artistMatches[0];
+      const dayName = isCA ? DAY_CA[ev.day] : DAY_ES[ev.day];
+      return {
+        text: isCA
+          ? `${ev.icon} <strong>${ev.title.ca}</strong><br>📅 ${dayName} · <strong>${ev.time}h</strong><br>📍 ${ev.place}${ticketLine(ev)}`
+          : `${ev.icon} <strong>${ev.title.es}</strong><br>📅 ${dayName} · <strong>${ev.time}h</strong><br>📍 ${ev.place}${ticketLine(ev)}`,
+        events: [], shops: []
+      };
+    }
+    if (artistMatches.length > 1 && artistMatches.length <= 6) {
+      return {
+        text: isCA
+          ? `He trobat ${artistMatches.length} actes relacionats:`
+          : `He encontrado ${artistMatches.length} actos relacionados:`,
+        events: artistMatches,
+        shops: []
+      };
+    }
+  }
+
+  // 2. Aplicar filtros combinados
+  let events = EVENTS.slice();
+  if (place) events = events.filter(e => e.place === place || (place === 'El Casino' && e.place === 'Pati del Casino'));
+  if (day) events = events.filter(e => e.day === day);
+  if (range) events = events.filter(e => eventInTimeRange(e, range));
+  if (category) events = events.filter(e => e.cat === category);
+
+  // 3. Ordenar cronológicamente (lógica festa major)
+  events.sort((a, b) => {
+    if (a.day !== b.day) return a.day - b.day;
+    const [ha, ma] = a.time.split(':').map(Number);
+    const [hb, mb] = b.time.split(':').map(Number);
+    const minA = (ha < 7 ? ha + 24 : ha) * 60 + ma;
+    const minB = (hb < 7 ? hb + 24 : hb) * 60 + mb;
+    return minA - minB;
+  });
+
+  // 4. Sugerir comercios cerca del lugar (si hay lugar) o por categoría
+  const suggestedShops = [];
+
+  // 5. Construir respuesta
+  const filterDesc = describeFilters(place, day, range, isCA);
+  let intro = '';
+  let limit = 6;
+
+  if (events.length === 0) {
+    // Caso A: hay filtros pero no resultados → sugerir alternativa
+    if (place || day || range) {
+      let altEvents = [];
+      let altIntro = '';
+      if (place && (day || range)) {
+        // Probar solo con el lugar
+        altEvents = EVENTS.filter(e => e.place === place).slice(0, 4);
+        if (altEvents.length > 0) {
+          altIntro = isCA
+            ? `No hi ha res ${filterDesc}. Però aquí tens tot el que es fa al ${place} durant la Festa Major:`
+            : `No hay nada ${filterDesc}. Pero aquí tienes todo lo que se hace en ${place} durante la Fiesta Mayor:`;
+        }
+      } else if (day && range) {
+        altEvents = EVENTS.filter(e => e.day === day).slice(0, 4);
+        if (altEvents.length > 0) {
+          const dayName = isCA ? {26:'dijous 26',27:'divendres 27',28:'dissabte 28',29:'diumenge 29'}[day] : {26:'jueves 26',27:'viernes 27',28:'sábado 28',29:'domingo 29'}[day];
+          altIntro = isCA
+            ? `No hi ha res ${filterDesc}. Però aquí tens propostes de tot el ${dayName}:`
+            : `No hay nada ${filterDesc}. Pero aquí tienes propuestas de todo el ${dayName}:`;
+        }
+      }
+      if (altEvents.length > 0) {
+        return { text: altIntro, events: altEvents, shops: suggestedShops };
+      }
+      return {
+        text: isCA
+          ? `No he trobat res ${filterDesc}. Prova preguntant per un altre dia o un altre lloc 😊`
+          : `No he encontrado nada ${filterDesc}. Prueba preguntando por otro día u otro lugar 😊`,
+        events: [], shops: []
+      };
+    }
+    // Caso B: pregunta genérica sin filtros → mostrar selección + URL oficial
+    events = EVENTS.slice(0, 4);
+    intro = isCA
+      ? `No he trobat res per a "${q}". Et mostro alguns actes del programa:`
+      : `No he encontrado nada para "${q}". Te muestro algunos actos del programa:`;
+    return { text: intro, events, shops: suggestedShops };
+  }
+
+  // Hay resultados → personalizar intro según los filtros
+  if (filterDesc) {
+    const verb = isCA ? "Això tens" : "Esto tienes";
+    intro = events.length === 1
+      ? (isCA ? `Aquest acte es fa ${filterDesc}:` : `Este acto se hace ${filterDesc}:`)
+      : `${verb} ${filterDesc} (${events.length} actes):`;
+  } else if (category === 'infantil') {
+    intro = isCA ? "Plans ideals per a la canalla 🎈" : "¡Planes ideales para los peques 🎈";
+  } else if (category === 'musica') {
+    intro = isCA ? "Concerts que no et pots perdre 🎵" : "Conciertos que no te puedes perder 🎵";
+  } else if (category === 'tradicio') {
+    intro = isCA ? "Tradicions ben nostres 🎭" : "Tradiciones bien nuestras 🎭";
+  } else if (category === 'gastro') {
+    intro = isCA ? "Per omplir l'estómac 🍔" : "Para llenar el estómago 🍔";
+  } else if (category === 'esport') {
+    intro = isCA ? "Activitats esportives ⚽" : "Actividades deportivas ⚽";
+  } else if (category === 'nit') {
+    intro = isCA ? "Festa fins a la matinada 🌙" : "¡Fiesta hasta la madrugada 🌙";
+  } else if (/ara|ahora|now/.test(q)) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    events = events.filter(e => {
+      const [h, m] = e.time.split(':').map(Number);
+      return Math.abs((h * 60 + m) - nowMin) < 90;
+    });
+    if (events.length === 0) events = EVENTS.slice(0, 3);
+    intro = isCA ? "Això està passant ara o aviat 🕐" : "Esto está pasando ahora o pronto 🕐";
+  } else if (/gratu[ïi]t|gratis|free/.test(q)) {
+    intro = isCA ? "Tot això és gratuït 🎉" : "Todo esto es gratuito 🎉";
+  } else {
+    intro = isCA ? "Aquí tens algunes propostes:" : "Aquí tienes algunas propuestas:";
+  }
+
+  return { text: intro, events: events.slice(0, limit), shops: suggestedShops };
+}
+
+// ============ DETAIL MODAL ============
+function openDetail(id) {
+  const ev = EVENTS.find(e => e.id === id);
+  if (!ev) return;
+  // Tracking de l'acte consultat
+  try {
+    const st = JSON.parse(localStorage.getItem('_fmStats') || '{}');
+    st.eventViews = st.eventViews || {};
+    st.eventViews[id] = (st.eventViews[id] || 0) + 1;
+    st.totalEventViews = (st.totalEventViews || 0) + 1;
+    localStorage.setItem('_fmStats', JSON.stringify(st));
+  } catch(e) {}
+  const sheet = document.getElementById('detail-sheet');
+  sheet.innerHTML = `
+    <div class="detail-handle"></div>
+    <button class="detail-close" onclick="closeDetail()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="detail-cat-pill cat-${ev.cat}">${getCat(ev.cat)}</div>
+    <h2 class="detail-title">${getTitle(ev)}</h2>
+    <div class="detail-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <div><strong>${t('when')}:</strong> ${({26:{ca:'Divendres 26',es:'Viernes 26'},27:{ca:'Dissabte 27',es:'Sábado 27'},28:{ca:'Diumenge 28',es:'Domingo 28'},29:{ca:'Dilluns 29',es:'Lunes 29'}}[ev.day]||{})[LANG]||''}, ${ev.time}h</div>
+    </div>
+    <div class="detail-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <div><strong>${t('where')}:</strong> ${ev.place}</div>
+    </div>
+    <div class="detail-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+      <div><strong>${t('category')}:</strong> ${getCat(ev.cat)}</div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn-secondary" onclick="addToCalendar(${ev.id})">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+        ${t('addCalendar')}
+      </button>
+      <button class="btn-primary" onclick="showOnMap(${ev.id})">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        ${t('seeOnMap')}
+      </button>
+    </div>
+  `;
+  document.getElementById('detail-modal').classList.add('visible');
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('visible');
+}
+
+function showOnMap(id) {
+  const ev = EVENTS.find(e => e.id === id);
+  closeDetail();
+  goView('map');
+  setTimeout(() => {
+    map.setView([ev.lat, ev.lng], 18);
+    showMapInfo(ev);
+  }, 200);
+}
+
+function showShopOnMap(shopId) {
+}
+
+function addToCalendar(id) {
+  showToast(t('addedToast'));
+  closeDetail();
+}
+
+function showToast(text) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2000);
+}
+
+// ============ ADMIN PANEL ============
+let ADMIN_MODE = false;
+let LOGO_TAPS = 0;
+let LOGO_TAP_TIMEOUT = null;
+let adminHeatmapMap = null;
+
+// Detectar si se accede por URL /admin o #admin
+function checkAdminAccess() {
+  const path = window.location.pathname;
+  const hash = window.location.hash;
+  const search = window.location.search;
+  if (path.endsWith('/admin') || hash === '#admin' || search.includes('admin=1')) {
+    setTimeout(() => enterAdmin(), 300);
+  }
+}
+
+// Sistema de logo tap para acceder al admin
+function logoTap() {
+  LOGO_TAPS++;
+  clearTimeout(LOGO_TAP_TIMEOUT);
+  LOGO_TAP_TIMEOUT = setTimeout(() => { LOGO_TAPS = 0; }, 2000);
+  if (LOGO_TAPS >= 5) {
+    LOGO_TAPS = 0;
+    enterAdmin();
+  }
+}
+
+function enterAdmin() {
+  ADMIN_MODE = true;
+  // Saltar splash si está visible
+  document.getElementById('splash').classList.add('hidden');
+  // Ocultar nav inferior
+  document.querySelector('.bottom-nav').style.display = 'none';
+  // Ocultar header de la app
+  document.querySelector('.header').style.display = 'none';
+  // Mostrar vista admin
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-admin').classList.add('active');
+  // Renderizar contenido inicial
+  renderAdminDashboard();
+  renderAdminEvents();
+  renderAdminShops();
+}
+
+function exitAdmin() {
+  ADMIN_MODE = false;
+  document.querySelector('.bottom-nav').style.display = '';
+  document.querySelector('.header').style.display = '';
+  goView('home');
+  // Limpiar hash si existe
+  if (window.location.hash === '#admin') {
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+
+function adminGoTab(tabName) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('admin-' + tabName).classList.add('active');
+  if (tabName === 'heatmap') {
+    setTimeout(() => renderAdminHeatmap(), 100);
+  }
+}
+
+async function renderAdminDashboard() {
+  const ls = JSON.parse(localStorage.getItem('_fmStats') || '{}');
+
+  // --- Stats cards locals ---
+  document.getElementById('stat-sessions').textContent = (ls.sessions || 0).toLocaleString('ca-ES');
+  const lastVisit = ls.lastVisit ? new Date(ls.lastVisit).toLocaleString('ca-ES', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  document.getElementById('stat-sessions-date').textContent = 'Última: ' + lastVisit;
+  document.getElementById('stat-events-viewed').textContent = (ls.totalEventViews || 0).toLocaleString('ca-ES');
+
+  const sv = ls.sectionVisits || {};
+  const sNames = {home:'Inici',programa:'Programa',mapa:'Mapa',chat:'Chatbot'};
+  const topSec = Object.entries(sv).sort((a,b) => b[1]-a[1])[0];
+  if (topSec) {
+    document.getElementById('stat-top-section').textContent = sNames[topSec[0]] || topSec[0];
+    document.getElementById('stat-section-count').textContent = topSec[1] + ' visites';
+  } else {
+    document.getElementById('stat-top-section').textContent = '—';
+  }
+
+  // --- Actes més consultats (localStorage) ---
+  const evViews = ls.eventViews || {};
+  const sorted = Object.entries(evViews).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxV = sorted.length ? sorted[0][1] : 1;
+  if (sorted.length > 0) {
+    document.getElementById('admin-top-events').innerHTML = sorted.map(([id,views],i) => {
+      const ev = EVENTS.find(e => e.id === parseInt(id));
+      const title = ev ? getTitle(ev) : 'Acte #' + id;
+      return `<div class="admin-rank-item">
+        <div class="admin-rank-num">${i+1}</div>
+        <div class="admin-rank-info">
+          <div class="admin-rank-title">${title}</div>
+          <div class="admin-rank-stat">${views} ${views===1?'consulta':'consultes'}</div>
+        </div>
+        <div class="admin-rank-bar"><div class="admin-rank-bar-fill" style="width:${Math.round(views/maxV*100)}%"></div></div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('admin-top-events').innerHTML = '<em style="color:#888;font-size:13px;padding:8px 0;display:block;">Encara no hi ha dades. Obre alguns actes del programa!</em>';
+  }
+
+  // --- Gràfic activitat per hores (localStorage) ---
+  const hourly = ls.hourlyActivity || new Array(24).fill(0);
+  const maxH = Math.max(...hourly, 1);
+  document.getElementById('admin-hours-chart').innerHTML = hourly.map(h =>
+    `<div class="admin-chart-bar" style="height:${Math.max((h/maxH)*100,2)}%"></div>`
+  ).join('');
+
+  // --- Seccions visitades ---
+  const secOrder = ['home','programa','mapa','chat'];
+  const secFull = {home:'🏠 Inici',programa:'📅 Programa',mapa:'🗺️ Mapa',chat:'💬 Pere'};
+  const secColors = {home:'#B30016',programa:'#D4A011',mapa:'#1A8758',chat:'#5B2D8C'};
+  const totalSV = Object.values(sv).reduce((a,b)=>a+b,0)||1;
+  document.getElementById('admin-cats-popular').innerHTML = secOrder.map(s => {
+    const v = sv[s]||0;
+    const pct = Math.round(v/totalSV*100);
+    return `<div class="admin-cat-row">
+      <div class="admin-cat-label">${secFull[s]}</div>
+      <div class="admin-cat-bar"><div class="admin-cat-bar-fill" style="width:${pct*2.5}%;background:${secColors[s]};"></div></div>
+      <div class="admin-cat-value">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // --- Dades del servidor (Netlify Blobs via function) ---
+  const rqEl = document.getElementById('admin-recent-queries');
+  function _esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  try {
+    const res = await fetch('/.netlify/functions/stats');
+    const data = await res.json();
+    const v = data.visits || {}; const c = data.chat || {};
+    document.getElementById('stat-sessions').textContent = (v.total || 0).toLocaleString('ca-ES');
+    document.getElementById('stat-chat-total').textContent = (c.total || 0).toLocaleString('ca-ES');
+    const uEl = document.getElementById('stat-events-viewed'); if (uEl) uEl.textContent = (v.unique || 0).toLocaleString('ca-ES');
+    const byDay = v.byDay || {};
+    const days = Object.keys(byDay).sort();
+    let html = '';
+    if (days.length) {
+      html += '<div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#9A0C24;margin-bottom:6px;">Visites per dia</div>';
+      html += days.map(d => '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;border-bottom:1px solid #f5f5f5;"><span style="color:#555;">'+d+'</span><strong>'+byDay[d]+'</strong></div>').join('');
+      html += '</div>';
+    }
+    const tq = data.topQueries || [];
+    html += '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#9A0C24;margin-bottom:6px;">Preguntes mes frequents a Pere</div>';
+    if (tq.length) {
+      html += tq.map(t => '<div style="display:flex;gap:8px;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:13px;"><span style="color:#333;">'+_esc(t.q)+'</span><span style="color:#B30016;font-weight:600;white-space:nowrap;">'+t.n+'x</span></div>').join('');
+    } else {
+      html += '<em style="color:#888;font-size:13px;">Encara no hi ha consultes. Prova el Pere!</em>';
+    }
+    rqEl.innerHTML = html;
+  } catch(e) {
+    document.getElementById('stat-sessions').textContent = (ls.sessions||0).toString();
+    document.getElementById('stat-chat-total').textContent = (ls.chatQueries||0).toString();
+    document.getElementById('stat-chat-trend').textContent = 'Dades locals (servidor no disponible)';
+    rqEl.innerHTML = '<em style="color:#888;font-size:13px;">No sha pogut carregar les dades del servidor.</em>';
+  }
+}
+
+function renderAdminEvents() {
+  const search = (document.getElementById('admin-events-search')?.value || '').toLowerCase();
+  const filtered = EVENTS.filter(e => {
+    if (!search) return true;
+    return getTitle(e).toLowerCase().includes(search) || e.place.toLowerCase().includes(search);
+  });
+  document.getElementById('admin-events-count').textContent = EVENTS.length;
+  document.getElementById('admin-events-list').innerHTML = filtered.map(ev => `
+    <div class="admin-event-row">
+      <div class="admin-event-time">${ev.time}</div>
+      <div class="admin-event-info">
+        <div class="admin-event-info-title">${getTitle(ev)}</div>
+        <div class="admin-event-info-meta">${getCat(ev.cat)} · 📍 ${ev.place}</div>
+      </div>
+      <div class="admin-event-actions">
+        <button class="admin-icon-btn" onclick="adminEditEvent(${ev.id})" title="Editar">✏️</button>
+        <button class="admin-icon-btn danger" onclick="adminDeleteEvent(${ev.id})" title="Eliminar">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function adminNewEvent() {
+  showToast('Demo: aquí s\'obriria el formulari de nou esdeveniment');
+}
+function adminEditEvent(id) {
+  const ev = EVENTS.find(e => e.id === id);
+  showToast('Demo: editar "' + getTitle(ev).substring(0, 30) + '..."');
+}
+function adminDeleteEvent(id) {
+  const ev = EVENTS.find(e => e.id === id);
+  if (confirm('Eliminar "' + getTitle(ev) + '"?')) {
+    showToast('Demo: esdeveniment eliminat');
+  }
+}
+
+function renderAdminShops() {
+  // Estadísticas simuladas de visitas por comercio
+  const shopStats = {
+    s1: 312, s2: 198, s3: 145, s4: 387, s5: 421, s6: 156, s7: 289, s8: 67
+  };
+  document.getElementById('admin-shops-count').textContent = 0;
+  document.getElementById('admin-shops-list').innerHTML = '';
+}
+
+function adminNewShop() {
+  showToast('Demo: formulari per inscriure un nou comerç');
+}
+
+function renderAdminHeatmap() {
+  if (adminHeatmapMap) {
+    adminHeatmapMap.invalidateSize();
+    return;
+  }
+  const el = document.getElementById('admin-heatmap-map');
+  if (!el || typeof L === 'undefined') return;
+
+  adminHeatmapMap = L.map(el, { zoomControl: false, attributionControl: false })
+    .setView([41.4910, 2.0330], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(adminHeatmapMap);
+
+  // ============ CÁLCULO DINÁMICO DE HOTSPOTS ============
+  // En el prototipo, los hotspots se calculan a partir de la programación real:
+  // cada espacio se pondera por (nº actes) + (peso de horario nocturno) + (peso de actes grandes).
+  // En producción, estos pesos se sustituirán por datos reales de geolocalización agregada.
+
+  const placeWeights = {};
+  EVENTS.forEach(ev => {
+    if (!placeWeights[ev.place]) {
+      placeWeights[ev.place] = { count: 0, weight: 0, lat: ev.lat, lng: ev.lng };
+    }
+    placeWeights[ev.place].count += 1;
+    // Peso base por evento
+    let w = 1;
+    // Eventos nocturnos (21h-3h) tienen más concentración de público
+    const [h] = ev.time.split(':').map(Number);
+    if (h >= 21 || h < 3) w += 0.5;
+    // Categorías que concentran mucho público
+    if (ev.cat === 'musica' || ev.cat === 'nit') w += 0.6;
+    if (ev.cat === 'tradicio') w += 0.3;
+    placeWeights[ev.place].weight += w;
+  });
+
+  // Normalizar pesos al rango 0.3 - 1.0
+  const weights = Object.values(placeWeights).map(p => p.weight);
+  const maxW = Math.max(...weights);
+  const minW = Math.min(...weights);
+  const hotspots = Object.entries(placeWeights).map(([place, data]) => ({
+    lat: data.lat,
+    lng: data.lng,
+    intensity: 0.3 + 0.7 * ((data.weight - minW) / (maxW - minW || 1)),
+    label: place,
+    eventCount: data.count
+  }));
+
+  hotspots.forEach(h => {
+    // Tres círculos concéntricos para simular calor
+    L.circle([h.lat, h.lng], {
+      radius: 120 * h.intensity,
+      color: 'transparent',
+      fillColor: '#DC2626',
+      fillOpacity: 0.15 * h.intensity
+    }).addTo(adminHeatmapMap);
+    L.circle([h.lat, h.lng], {
+      radius: 70 * h.intensity,
+      color: 'transparent',
+      fillColor: '#F97316',
+      fillOpacity: 0.25 * h.intensity
+    }).addTo(adminHeatmapMap);
+    L.circle([h.lat, h.lng], {
+      radius: 30 * h.intensity,
+      color: 'transparent',
+      fillColor: '#FACC15',
+      fillOpacity: 0.4 * h.intensity
+    }).addTo(adminHeatmapMap);
+  });
+
+  // Renderizar listado dinámico de los 5 espacios más activos
+  const listEl = document.getElementById('admin-heatmap-list');
+  if (listEl) {
+    const top5 = hotspots.sort((a, b) => b.intensity - a.intensity).slice(0, 5);
+    const dotEmoji = (i, total) => {
+      const ratio = i / (total - 1);
+      if (ratio < 0.2) return '🔴';
+      if (ratio < 0.4) return '🟠';
+      if (ratio < 0.6) return '🟡';
+      if (ratio < 0.8) return '🟢';
+      return '🔵';
+    };
+    listEl.innerHTML = top5.map((h, i) => {
+      const pct = Math.round(h.intensity * 100);
+      return `<li>${dotEmoji(i, top5.length)} <strong>${h.label}:</strong> ${h.eventCount} acte${h.eventCount > 1 ? 's' : ''} · índex d'activitat ${pct}%</li>`;
+    }).join('');
+  }
+}
+
+function adminExport(type) {
+  const labels = {
+    'events-pdf': 'Generant programa PDF...',
+    'stats-pdf': 'Generant informe estadístic...',
+    'events-csv': 'Descarregant CSV d\'esdeveniments...',
+    'shops-csv': 'Descarregant CSV de comerços...'
+  };
+  showToast(labels[type] || 'Exportant...');
+  setTimeout(() => {
+    showToast('✓ Descàrrega simulada (demo)');
+  }, 1500);
+}
+
+// ============ INIT ============
+window.addEventListener('DOMContentLoaded', () => {
+  applyLang();
+  renderHome();
+  renderChips();
+  renderDays();
+  renderSuggestions();
+  checkAdminAccess();
+  // Tracking de sessio (local)
+  try {
+    const st = JSON.parse(localStorage.getItem('_fmStats') || '{}');
+    st.sessions = (st.sessions || 0) + 1;
+    st.lastVisit = new Date().toISOString();
+    st.hourlyActivity = st.hourlyActivity || new Array(24).fill(0);
+    st.hourlyActivity[new Date().getHours()]++;
+    localStorage.setItem('_fmStats', JSON.stringify(st));
+  } catch(e) {}
+  // Tracking de visita al servidor (1 cop per sessio de navegador)
+  if (!sessionStorage.getItem('_fmVisited')) {
+    sessionStorage.setItem('_fmVisited', '1');
+    (function(){ let _vid=''; try{ _vid=localStorage.getItem('_fmVid')||''; if(!_vid){ _vid='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); localStorage.setItem('_fmVid',_vid);} }catch(e){} fetch('/.netlify/functions/visit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'visit',visitorId:_vid})}).catch(()=>{}); })();
+  }
+  // Conectar logo del header a los 5 toques
+  const headerLogo = document.querySelector('.header-brand');
+  if (headerLogo) {
+    headerLogo.style.cursor = 'pointer';
+    headerLogo.addEventListener('click', logoTap);
+  }
+});
+
+function openAbout(){ var m=document.getElementById('about-modal'); if(m) m.classList.add('visible'); }
+function closeAbout(){ var m=document.getElementById('about-modal'); if(m) m.classList.remove('visible'); }
+function speakText(t){ try{ if(!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(String(t)); u.lang = (typeof LANG!=='undefined'&&LANG==='es')?'es-ES':'ca-ES'; u.rate=0.95; window.speechSynthesis.speak(u); }catch(e){} }
+function startDictation(){ var SR = window.SpeechRecognition || window.webkitSpeechRecognition; var mic=document.getElementById('chat-mic-btn'); if(!SR){ showToast(LANG==='es'?'Tu navegador no permite hablar; escribe la pregunta 🙂':'El teu navegador no permet parlar; escriu la pregunta 🙂'); return; } try{ var r=new SR(); r.lang=(LANG==='es')?'es-ES':'ca-ES'; r.interimResults=false; r.maxAlternatives=1; if(mic) mic.classList.add('listening'); r.onresult=function(e){ var t=e.results[0][0].transcript; var inp=document.getElementById('chat-input'); if(inp){ inp.value=t; sendMessage(); } }; r.onerror=function(){ showToast(LANG==='es'?'No t\'he sentit, torna-ho a provar':'No t\'he sentit, torna-ho a provar'); }; r.onend=function(){ if(mic) mic.classList.remove('listening'); }; r.start(); }catch(e){ if(mic) mic.classList.remove('listening'); } }
+function copyEmail(){ var e='carmen@danexaia.com'; try { if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(e).then(function(){ showToast(LANG==='ca'?'Correu copiat \u2713':'Correo copiado \u2713'); }).catch(function(){ showToast(e); }); } else { showToast(e); } } catch(err){ showToast(e); } }
+</script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a0e6dd3dc2b54b1895b3d4fdc5d9a408"}'>
+</script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
+                                                                                                                                                                       
