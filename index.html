@@ -2313,6 +2313,8 @@ function toggleLang() {
 // ============ NAVIGATION ============
 function enterApp() {
   document.getElementById('splash').classList.add('hidden');
+  const _fab = document.getElementById('pere-fab');
+  if (_fab) _fab.classList.remove('hidden');
 }
 
 function trackSection(name) {
@@ -3503,7 +3505,7 @@ function copyEmail(){ var e='carmen@danexaia.com'; try { if(navigator.clipboard 
 </script><!-- End Cloudflare Web Analytics -->
 
   <!-- FAB Pere -->
-  <button class="pere-fab" id="pere-fab" onclick="goView('chat')" aria-label="Parla amb en Pere">
+  <button class="pere-fab hidden" id="pere-fab" onclick="goView('chat')" aria-label="Parla amb en Pere">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
     </svg>
