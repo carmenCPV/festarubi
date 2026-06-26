@@ -1451,6 +1451,30 @@ input, textarea { font-family: inherit; }
 .rita-poke { position:absolute; right:14px; bottom:11px; display:inline-flex; align-items:center; gap:5px; background:var(--rubi-yellow); color:var(--rubi-ink); font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; box-shadow:0 4px 10px rgba(0,0,0,0.28); animation:pokeBounce 1.05s ease-in-out infinite; pointer-events:none; z-index:2; }
 @keyframes pokeBounce { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
 .chat-hint { text-align:center; font-size:12px; color:var(--rubi-ink-soft); padding:2px 8px 8px; }
+
+/* --- FAB Pere button --- */
+.pere-fab {
+  position: fixed;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  right: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 900;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.pere-fab:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(0,0,0,0.22); }
+.pere-fab.hidden { display: none; }
+.pere-fab svg { width: 28px; height: 28px; fill: #fff; }
+
 </style>
 </head>
 <body>
@@ -2305,6 +2329,9 @@ function goView(viewName) {
   document.getElementById(`view-${viewName}`).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
   trackSection(viewName);
+  // Show/hide Pere FAB
+  const _fab = document.getElementById('pere-fab');
+  if (_fab) _fab.classList.toggle('hidden', viewName === 'chat' || viewName === 'admin');
 
   if (viewName === 'map') {
     if (!map) {
@@ -3474,6 +3501,14 @@ function copyEmail(){ var e='carmen@danexaia.com'; try { if(navigator.clipboard 
 </script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a0e6dd3dc2b54b1895b3d4fdc5d9a408"}'>
 </script><!-- End Cloudflare Web Analytics -->
+
+  <!-- FAB Pere -->
+  <button class="pere-fab" id="pere-fab" onclick="goView('chat')" aria-label="Parla amb en Pere">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+    </svg>
+  </button>
+
 </body>
 </html>
                                                                                                                                                                        
